@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Counsel Assistant - 프레젠테이션</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         * {
             margin: 0;
@@ -91,27 +92,76 @@
             color: #fff;
         }
 
-        /* Q&A 전용 슬라이드 (12페이지) — 심플 중앙 정렬 */
+        /* Q&A 전용 슬라이드 — 가로·세로 중앙 정렬, 질문 유도 스타일 */
         .slide-qa {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #fbfbfd;
+            text-align: center;
+            padding: clamp(20px, calc(4 * var(--vmin)), 48px);
+            width: 100%;
+        }
+
+        .presentation-container .slide.slide-qa {
+            background: linear-gradient(160deg, #f0f9f6 0%, #e8f5f0 50%, #f5faf8 100%) !important;
         }
 
         .slide-qa .qa-slide-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .slide-qa .qa-icon-wrap {
+            width: clamp(90px, calc(20 * var(--vmin)), 140px);
+            height: clamp(90px, calc(20 * var(--vmin)), 140px);
+            margin: 0 auto clamp(0.5em, calc(1.5 * var(--vmin)), 1em);
+            background: linear-gradient(135deg, #009c64, #00b377);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 28px rgba(0, 156, 100, 0.35);
+        }
+
+        .slide-qa .qa-icon-wrap svg {
+            width: 55%;
+            height: 55%;
+            color: #fff;
         }
 
         .slide-qa .qa-title {
-            font-size: clamp(2.2em, calc(6 * var(--vmin)), 3.5em);
+            font-size: clamp(3.2em, calc(9 * var(--vmin)), 5.8em);
             color: #1d1d1f;
-            margin-bottom: 0.4em;
+            margin-bottom: 0.35em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
         .slide-qa .qa-lead {
-            font-size: clamp(1em, calc(1.8 * var(--vmin)), 1.25em);
-            color: #6e6e73;
+            font-size: clamp(1.1em, calc(2.2 * var(--vmin)), 1.45em);
+            color: #4a4a4e;
+            line-height: 1.5;
+            margin-bottom: 0.6em;
+            max-width: 28em;
+        }
+
+        .slide-qa .qa-cta {
+            font-size: clamp(0.95em, calc(1.8 * var(--vmin)), 1.15em);
+            color: #009c64;
+            font-weight: 600;
+            margin-top: 0.4em;
+            padding: 0.5em 1em;
+            border: 2px solid rgba(0, 156, 100, 0.4);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
         }
 
         .slide.active {
@@ -399,8 +449,8 @@
             margin: 0.35em 0;
             text-align: center;
             flex-shrink: 0;
-            height: calc(36 * var(--vh));
-            min-height: 220px;
+            height: calc(55 * var(--vh));
+            min-height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -417,7 +467,7 @@
         }
 
         .slide-case .case-image-wrap-svg {
-            min-height: calc(18 * var(--vh));
+            min-height: calc(28 * var(--vh));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -427,8 +477,8 @@
             display: block;
             width: 100%;
             height: auto;
-            max-height: calc(28 * var(--vh));
-            min-height: 180px;
+            max-height: calc(42 * var(--vh));
+            min-height: 220px;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
@@ -443,12 +493,12 @@
         }
 
         .slide-case .case-image-row {
-            min-height: calc(26 * var(--vh));
+            min-height: calc(34 * var(--vh));
         }
 
         .slide-case .case-image-row img {
-            max-height: calc(28 * var(--vh));
-            min-height: calc(20 * var(--vh));
+            max-height: calc(38 * var(--vh));
+            min-height: calc(28 * var(--vh));
             width: auto;
             object-fit: contain;
             border-radius: 8px;
@@ -595,8 +645,8 @@
         .slide-page-feature .feature-img-wrap {
             position: relative;
             flex: 1;
-            height: calc(42 * var(--vh));
-            min-height: 260px;
+            height: calc(58 * var(--vh));
+            min-height: 320px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -759,6 +809,7 @@
 
         .slide img:not(.slide-logo-header img) {
             max-width: 100%;
+            max-height: calc(65 * var(--vh));
             height: auto;
             object-fit: contain;
         }
@@ -806,7 +857,7 @@
         }
 
         .title-slide h1 {
-            font-size: clamp(1.6em, calc(4.2 * var(--vmin)), 3em);
+            font-size: clamp(3.04em, calc(8.56 * var(--vmin)), 6.22em);
             margin-bottom: 0.3em;
             color: #1a1a1a;
             font-weight: 600;
@@ -819,7 +870,7 @@
         }
 
         .title-slide .subtitle {
-            font-size: clamp(0.9em, calc(1.75 * var(--vmin)), 1.15em);
+            font-size: clamp(1.38em, calc(3 * var(--vmin)), 1.98em);
             color: #555;
             font-style: normal;
             margin-top: 0.35em;
@@ -828,7 +879,7 @@
         }
 
         .title-slide .product-name {
-            font-size: clamp(1.1em, calc(2.2 * var(--vmin)), 1.7em);
+            font-size: clamp(1.32em, calc(2.64 * var(--vmin)), 2.04em);
             color: #333;
             margin-top: 0.4em;
             font-weight: 600;
@@ -849,6 +900,13 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+        }
+
+        .slide-end .title-slide-inner h1 {
+            font-size: clamp(2.88em, calc(8.4 * var(--vmin)), 6em);
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
         }
 
         .slide-logo-header {
@@ -1009,6 +1067,59 @@
 
         .solution-list {
             border-left-color: #009c64;
+        }
+
+        /* 4·5페이지: 애플 스타일 꽉 찬 배치 */
+        .slide-problem-page,
+        .slide-solution-page {
+            display: flex;
+            flex-direction: column;
+            padding: clamp(16px, calc(2.5 * var(--vmin)), 28px);
+        }
+
+        .slide-problem-page .problem-solution-list-wrap,
+        .slide-solution-page .problem-solution-list-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(12px, calc(2 * var(--vmin)), 20px);
+            min-height: 0;
+            width: 100%;
+            max-width: min(820px, 94%);
+            margin: 0 auto;
+        }
+
+        .slide-problem-page .problem-list,
+        .slide-solution-page .solution-list {
+            flex: 1;
+            min-height: 0;
+            max-width: 100%;
+            padding: clamp(16px, calc(2.2 * var(--vmin)), 24px) clamp(20px, calc(2.8 * var(--vmin)), 28px);
+            border-radius: 16px;
+            margin: 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        }
+
+        .slide-problem-page .problem-list h3,
+        .slide-solution-page .solution-list h3 {
+            font-size: clamp(1.05em, calc(2 * var(--vmin)), 1.25em);
+            margin-bottom: 0.35em;
+        }
+
+        .slide-problem-page .problem-list p,
+        .slide-solution-page .solution-list p {
+            font-size: clamp(0.9em, calc(1.5 * var(--vmin)), 1em);
+            line-height: 1.55;
+        }
+
+        .slide-solution-page .problem-solution-list-wrap-2 {
+            flex-direction: row;
+            gap: clamp(16px, calc(2.5 * var(--vmin)), 24px);
+        }
+
+        .slide-solution-page .problem-solution-list-wrap-2 .solution-list {
+            flex: 1;
+            min-width: 0;
         }
 
         /* 블러 카드 공통 */
@@ -1268,16 +1379,16 @@
         .user-flow-step {
             flex: 1;
             min-width: 0;
-            max-width: clamp(160px, calc(22 * var(--vmin)), 220px);
+            max-width: clamp(200px, calc(28 * var(--vmin)), 280px);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: clamp(10px, calc(1.5 * var(--vmin)), 16px) clamp(8px, calc(1.2 * var(--vmin)), 14px);
-            background: rgba(248, 250, 252, 0.9);
-            border-radius: clamp(10px, calc(1.5 * var(--vmin)), 16px);
-            border: 1px solid rgba(0, 156, 100, 0.2);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: clamp(14px, calc(2.2 * var(--vmin)), 22px) clamp(12px, calc(1.8 * var(--vmin)), 18px);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 156, 100, 0.15);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -1289,10 +1400,18 @@
         }
 
         .user-flow-step-icon {
-            width: clamp(40px, calc(6 * var(--vmin)), 56px);
-            height: clamp(40px, calc(6 * var(--vmin)), 56px);
-            margin-bottom: clamp(6px, calc(1 * var(--vmin)), 10px);
+            width: clamp(48px, calc(7 * var(--vmin)), 64px);
+            height: clamp(48px, calc(7 * var(--vmin)), 64px);
+            margin-bottom: clamp(8px, calc(1.2 * var(--vmin)), 12px);
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #009c64;
+        }
+
+        .user-flow-step-icon .bi {
+            font-size: clamp(1.75rem, calc(4 * var(--vmin)), 2.5rem);
         }
 
         .user-flow-step-num {
@@ -1332,9 +1451,9 @@
             color: #009c64;
         }
 
-        .user-flow-arrow svg {
-            width: clamp(24px, calc(4 * var(--vmin)), 36px);
-            height: clamp(24px, calc(4 * var(--vmin)), 36px);
+        .user-flow-arrow .bi {
+            font-size: clamp(1.5rem, calc(4 * var(--vmin)), 2.25rem);
+            color: #009c64;
             opacity: 0.85;
             animation: arrowFlow 2s ease-in-out infinite;
         }
@@ -1637,6 +1756,10 @@
         .slide-backend-arch .arch-layer-api {
             fill: #2d3748;
             stroke: #1a202c;
+        }
+
+        .slide-backend-arch .arch-text-api {
+            fill: #fff !important;
         }
 
         .slide-backend-arch .arch-layer-controller {
@@ -2109,14 +2232,28 @@
         }
 
         .key-feature-icon {
-            width: clamp(36px, 5.calc(5 * var(--vmin)), 64px);
-            height: clamp(36px, 5.calc(5 * var(--vmin)), 64px);
+            width: clamp(48px, calc(8 * var(--vmin)), 72px);
+            height: clamp(48px, calc(8 * var(--vmin)), 72px);
             margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .key-feature-icon svg {
-            width: 100%;
-            height: 100%;
+        .key-feature-icon .bi {
+            font-size: clamp(2rem, calc(5 * var(--vmin)), 3rem);
+        }
+
+        .key-feature-icon-1 .bi {
+            color: #0284c7;
+        }
+
+        .key-feature-icon-2 .bi {
+            color: #009c64;
+        }
+
+        .key-feature-icon-3 .bi {
+            color: #475569;
         }
 
         @media (max-width: 900px) {
@@ -2620,7 +2757,9 @@
         }
 
         .slide-case-fill .case-fill-top .case-image-wrap {
-            max-height: calc(22 * var(--vh));
+            height: calc(42 * var(--vh));
+            min-height: 220px;
+            max-height: calc(48 * var(--vh));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2628,8 +2767,10 @@
 
         .slide-case-fill .case-fill-top .case-image-wrap img {
             max-height: 100%;
-            width: auto;
             max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
 
         .slide-case-fill .case-fill-bottom {
@@ -2652,7 +2793,7 @@
         .slide-case-fill .data-extract-in-case .excel-table-wrap {
             flex: 1;
             min-height: 0;
-            max-height: calc(18 * var(--vh));
+            max-height: calc(28 * var(--vh));
             overflow: auto;
         }
 
@@ -2747,6 +2888,11 @@
             grid-template-columns: repeat(2, 1fr);
         }
 
+        .slide-page-feature-merged .feature-merged-grid.cols-2 .feature-merged-item img {
+            max-height: calc(40 * var(--vh));
+            min-height: calc(30 * var(--vh));
+        }
+
         .slide-page-feature-merged .feature-merged-item {
             position: relative;
             display: flex;
@@ -2762,7 +2908,8 @@
         .slide-page-feature-merged .feature-merged-item img {
             width: 100%;
             height: auto;
-            max-height: calc(16 * var(--vh));
+            max-height: calc(26 * var(--vh));
+            min-height: calc(20 * var(--vh));
             object-fit: contain;
         }
 
@@ -2791,7 +2938,55 @@
         }
 
         .slide-page-feature-merged .feature-merged-single .feature-img-wrap img {
-            max-height: calc(38 * var(--vh));
+            max-height: calc(55 * var(--vh));
+            min-height: calc(38 * var(--vh));
+        }
+
+        /* 16·17 통합: 관련 이미지끼리 묶어 세로 배치, 이미지 크게 */
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-combined-inner {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(12px, calc(2.5 * var(--vmin)), 24px);
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35em;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-group-title {
+            font-size: clamp(0.85em, calc(1.8 * var(--vmin)), 1.1em);
+            font-weight: 600;
+            color: #009c64;
+            text-align: center;
+            margin: 0;
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-group-grid {
+            display: grid;
+            gap: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            flex: 1;
+            min-height: 0;
+            align-items: stretch;
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-group-grid.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-group-grid.cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .slide-page-feature-merged.feature-merged-combined .feature-merged-item img {
+            max-height: calc(32 * var(--vh));
+            min-height: calc(24 * var(--vh));
         }
     </style>
 </head>
@@ -2903,78 +3098,63 @@
             </div>
         </div>
 
-        <!-- 슬라이드 3: 문제 정의 (공감대 형성) -->
-        <div class="slide slide-content">
+        <!-- 슬라이드 4: 문제 정의 (공감대 형성) -->
+        <div class="slide slide-content slide-problem-page">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">❓</span> 이런 고민, 있으신가요?</h2>
             <p class="lead-question">상담 기록과 데이터를 어떻게 하면 제대로 활용할 수 있을까요? — 먼저 현장의 목소리에 공감합니다.</p>
-            <div class="problem-list card-blur">
-                <h3><span class="list-icon">⚠️</span> 상담 데이터가 제각각이라 활용이 어렵다</h3>
-                <p>"상담사 10명이면 10가지 결과물" — 기록 방식이 달라 소중한 상담 기록이 단순 텍스트 뭉치로만 남고, 데이터로 쌓이지 않는 현실</p>
-            </div>
-            <div class="problem-list card-blur">
-                <h3><span class="list-icon">⚠️</span> 상담사에 따라 내담자 결과가 달라진다</h3>
-                <p>숙련 상담사와 신입의 노하우 차이로, 같은 내담자도 만나는 사람에 따라 정보의 질과 성공률이 달라지는 불균형</p>
-            </div>
-            <div class="problem-list card-blur">
-                <h3><span class="list-icon">⚠️</span> 서류·검토에 상담보다 시간이 더 든다</h3>
-                <p>상담 시간보다 긴 서류 작성과 사업 연계 검토 — 상담 본업에 집중하기 어려운 구조</p>
+            <div class="problem-solution-list-wrap">
+                <div class="problem-list card-blur">
+                    <h3><span class="list-icon">⚠️</span> 상담 데이터가 제각각이라 활용이 어렵다</h3>
+                    <p>"상담사 10명이면 10가지 결과물" — 기록 방식이 달라 소중한 상담 기록이 단순 텍스트 뭉치로만 남고, 데이터로 쌓이지 않는 현실</p>
+                </div>
+                <div class="problem-list card-blur">
+                    <h3><span class="list-icon">⚠️</span> 상담사에 따라 내담자 결과가 달라진다</h3>
+                    <p>숙련 상담사와 신입의 노하우 차이로, 같은 내담자도 만나는 사람에 따라 정보의 질과 성공률이 달라지는 불균형</p>
+                </div>
+                <div class="problem-list card-blur">
+                    <h3><span class="list-icon">⚠️</span> 서류·검토에 상담보다 시간이 더 든다</h3>
+                    <p>상담 시간보다 긴 서류 작성과 사업 연계 검토 — 상담 본업에 집중하기 어려운 구조</p>
+                </div>
             </div>
         </div>
 
-        <!-- 슬라이드 4: 솔루션 (해결책 구체화) -->
-        <div class="slide slide-content">
+        <!-- 슬라이드 5: 솔루션 (해결책 구체화) -->
+        <div class="slide slide-content slide-solution-page">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">💡</span> 그렇다면, 해결책은?</h2>
             <p class="lead-question">데이터를 자산으로 바꾸고, 상담 품질을 한 단계 올리는 방법 — 우리의 강점을 구체적으로 제시합니다.</p>
-            <div class="solution-list card-blur">
-                <h3><span class="list-icon list-icon-check">✓</span> 데이터의 자산화</h3>
-                <p>자유 형식의 상담 일지를 AI가 실시간 분석해 <span class="highlight">정형 데이터</span>로 변환합니다. 쌓여만 있던 기록을 검색·분석 가능한 자산으로
-                    전환합니다.</p>
-            </div>
-            <div class="solution-list card-blur">
-                <h3><span class="list-icon list-icon-check">✓</span> 지식의 평준화</h3>
-                <p>신입 상담사도 유사 사례 기반 가이드를 바로 활용할 수 있도록, 베테랑의 노하우를 표준화된 형태로 제공합니다.</p>
+            <div class="problem-solution-list-wrap problem-solution-list-wrap-2">
+                <div class="solution-list card-blur">
+                    <h3><span class="list-icon list-icon-check">✓</span> 데이터의 자산화</h3>
+                    <p>자유 형식의 상담 일지를 AI가 실시간 분석해 <span class="highlight">정형 데이터</span>로 변환합니다. 쌓여만 있던 기록을 검색·분석 가능한 자산으로
+                        전환합니다.</p>
+                </div>
+                <div class="solution-list card-blur">
+                    <h3><span class="list-icon list-icon-check">✓</span> 지식의 평준화</h3>
+                    <p>신입 상담사도 유사 사례 기반 가이드를 바로 활용할 수 있도록, 베테랑의 노하우를 표준화된 형태로 제공합니다.</p>
+                </div>
             </div>
         </div>
 
-        <!-- 슬라이드 5: 핵심 기능 (통합) -->
+        <!-- 슬라이드 6: 핵심 기능 (통합) -->
         <div class="slide slide-key-features slide-content">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">⚙️</span> 어떻게 가능하게 할까요?</h2>
             <p class="lead-question">세 가지 핵심 기능으로 ‘기록 → 분석 → 추천’을 한 번에</p>
             <div class="key-features-grid">
                 <div class="key-feature-card card-blur">
-                    <div class="key-feature-icon">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="8" y="12" width="32" height="24" rx="4" stroke="#2c5282" stroke-width="2"
-                                fill="#e6f2ff" />
-                            <path d="M16 22h16M16 28h12" stroke="#2c5282" stroke-width="1.5" stroke-linecap="round" />
-                            <circle cx="24" cy="34" r="2" fill="#2c5282" />
-                        </svg>
-                    </div>
+                    <div class="key-feature-icon key-feature-icon-1"><i class="bi bi-shield-check"
+                            aria-hidden="true"></i></div>
                     <h3>안전하고 스마트한 식별</h3>
                     <p>이름·전화번호만으로 과거 이력과 유사 사례를 안전하게 매칭합니다.</p>
                 </div>
                 <div class="key-feature-card card-blur">
-                    <div class="key-feature-icon">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="24" cy="20" r="10" stroke="#009c64" stroke-width="2" fill="#e6f7f0" />
-                            <path d="M14 38c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#009c64" stroke-width="1.5"
-                                stroke-linecap="round" />
-                            <path d="M24 14v4l3 3" stroke="#009c64" stroke-width="1.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                    <div class="key-feature-icon key-feature-icon-2"><i class="bi bi-compass" aria-hidden="true"></i>
                     </div>
                     <h3>AI 기반 상담 네비게이션</h3>
                     <p>나이·성별·학력·역량을 종합 분석해 최적의 직무·시나리오를 자동 추천합니다.</p>
                 </div>
                 <div class="key-feature-card card-blur">
-                    <div class="key-feature-icon">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="10" y="8" width="28" height="32" rx="2" stroke="#555" stroke-width="1.5"
-                                fill="#f5f5f5" />
-                            <path d="M16 18h16M16 24h12M16 30h8" stroke="#666" stroke-width="1"
-                                stroke-linecap="round" />
-                        </svg>
-                    </div>
+                    <div class="key-feature-icon key-feature-icon-3"><i class="bi bi-journal-text"
+                            aria-hidden="true"></i></div>
                     <h3>상담 내역 정형화</h3>
                     <p>자유 형식 일지를 AI가 실시간 분석해 정형 데이터로 변환하고, 자동 요약·DB 저장·직무 추천까지 연계합니다.</p>
                 </div>
@@ -2988,74 +3168,28 @@
             <p class="lead-question">상담사의 하루 — 데이터 흐름을 따라가 보세요</p>
             <div class="user-flow-row">
                 <div class="user-flow-step">
-                    <div class="user-flow-step-icon" aria-hidden="true">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="8" y="6" width="24" height="32" rx="2" stroke="#009c64" stroke-width="2"
-                                fill="rgba(0,156,100,0.08)" />
-                            <path d="M16 14h16M16 20h12M16 26h10" stroke="#009c64" stroke-width="1.5"
-                                stroke-linecap="round" />
-                            <circle cx="34" cy="34" r="8" fill="#009c64" opacity="0.2" />
-                            <path d="M38 38l6 6" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                    </div>
+                    <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-search"></i></div>
                     <span class="user-flow-step-num">1</span>
                     <h3>상담 전 조회</h3>
                     <p>자료 업로드 → AI 자동 요약·DB 저장 → 과거 이력·유사 사례 확인</p>
                 </div>
-                <div class="user-flow-arrow" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </div>
+                <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
-                    <div class="user-flow-step-icon" aria-hidden="true">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 14h24v20H12l-6 6V14z" stroke="#009c64" stroke-width="2"
-                                fill="rgba(0,156,100,0.08)" stroke-linejoin="round" />
-                            <path d="M18 22h12M18 26h8" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                    </div>
+                    <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-chat-dots"></i></div>
                     <span class="user-flow-step-num">2</span>
                     <h3>상담 중</h3>
                     <p>csv/word/pdf 기록 시 AI 실시간 가이드 → 놓치기 쉬운 항목 채우기</p>
                 </div>
-                <div class="user-flow-arrow" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </div>
+                <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
-                    <div class="user-flow-step-icon" aria-hidden="true">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M24 8v24M8 24h32" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
-                            <rect x="14" y="14" width="20" height="20" rx="2" stroke="#009c64" stroke-width="2"
-                                fill="rgba(0,156,100,0.08)" />
-                            <path d="M24 20v8M20 24h8" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
-                            <path d="M10 32l4-4 4 4 6-6 4 4" stroke="#009c64" stroke-width="1.2" stroke-linecap="round"
-                                stroke-linejoin="round" opacity="0.8" />
-                        </svg>
-                    </div>
+                    <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-cloud-upload"></i></div>
                     <span class="user-flow-step-num">3</span>
                     <h3>상담 후 업로드</h3>
                     <p>작성 자료 업로드 → AI 자동 요약·DB 업데이트</p>
                 </div>
-                <div class="user-flow-arrow" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </div>
+                <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
-                    <div class="user-flow-step-icon" aria-hidden="true">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="24" cy="24" r="18" stroke="#009c64" stroke-width="2"
-                                fill="rgba(0,156,100,0.08)" />
-                            <path d="M16 24l6 6 12-12" stroke="#009c64" stroke-width="2.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </div>
+                    <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-check-circle"></i></div>
                     <span class="user-flow-step-num">4</span>
                     <h3>검수 및 마감</h3>
                     <p>생성 데이터 확인 → 원클릭 수정·마감</p>
@@ -3133,7 +3267,7 @@
                         preserveAspectRatio="xMidYMid meet">
                         <!-- HTTP REST API -->
                         <rect class="arch-layer-api" x="20" y="8" width="600" height="36" rx="6" ry="6" />
-                        <text class="arch-text" x="320" y="31" text-anchor="middle" fill="#fff">HTTP REST API</text>
+                        <text class="arch-text arch-text-api" x="320" y="31" text-anchor="middle">HTTP REST API</text>
 
                         <!-- Controller Layer -->
                         <text class="arch-group-label" x="20" y="58" text-anchor="start">Controller Layer</text>
@@ -3375,12 +3509,11 @@
             </div>
         </div>
 
-        <!-- ========== 페이지별 기능 소개 (3장 통합, 강조만) ========== -->
-        <!-- 통합 1: 내담자 목록·조회·상세 조회 -->
+        <!-- ========== 페이지별 기능 소개: 16페이지 — 내담자 목록·조회·상세 (3개 묶음) ========== -->
         <div class="slide slide-content slide-page-feature slide-page-feature-merged">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 (1/3)
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 — 내담자 관리
             </h2>
-            <p class="lead-question">내담자 관리 흐름 — 목록·조회·상세</p>
+            <p class="lead-question">목록·조회·상세 조회</p>
             <div class="feature-merged-grid cols-3">
                 <div class="feature-merged-item">
                     <img src="src/내담자 목록.png" alt="내담자 목록" />
@@ -3402,10 +3535,10 @@
             </div>
         </div>
 
-        <!-- 통합 2: 상담 내역 결과·상담 자료 준비 -->
+        <!-- 페이지별 기능 소개: 17페이지 — 상담 내역 결과·상담 자료 준비 (2개 묶음) -->
         <div class="slide slide-content slide-page-feature slide-page-feature-merged">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 (2/3)
-            </h2>
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 — 상담
+                내역·자료 준비</h2>
             <p class="lead-question">상담 내역 확인과 자료 준비</p>
             <div class="feature-merged-grid cols-2">
                 <div class="feature-merged-item">
@@ -3424,9 +3557,9 @@
             </div>
         </div>
 
-        <!-- 통합 3: AI 상담 시나리오 (5초 강조) -->
+        <!-- 통합 2: AI 상담 시나리오 (5초 강조) -->
         <div class="slide slide-content slide-page-feature slide-page-feature-merged feature-merged-single">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🤖</span> 페이지별 기능 소개 (3/3) —
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🤖</span> 페이지별 기능 소개 (2/2) —
                 AI 상담 시나리오</h2>
             <div class="feature-img-wrap">
                 <img src="src/AI 상담 시나리오.png" alt="상담 시나리오 조회 중" />
@@ -3447,7 +3580,6 @@
                             <span class="yellow"></span>
                             <span class="green"></span>
                         </div>
-                        <span class="mac-window-title">데모 시연</span>
                     </div>
                     <div class="mac-video-area">
                         <div class="play-icon-wrap">
@@ -3488,8 +3620,16 @@
         <!-- 슬라이드 12: Q&A -->
         <div class="slide slide-content slide-qa">
             <div class="qa-slide-inner">
-                <h1 class="qa-title">Q&A</h1>
-                <p class="qa-lead">궁금하신 점을 질문해 주세요</p>
+                <div class="qa-icon-wrap" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                </div>
+                <h1 class="qa-title">Q&amp;A</h1>
+                <p class="qa-lead">궁금한 점이 있으시면 편하게 질문해 주세요.<br />참여해 주셔서 감사합니다.</p>
+                <p class="qa-cta">질문을 남겨 주세요</p>
             </div>
         </div>
 
