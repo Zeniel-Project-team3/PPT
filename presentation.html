@@ -505,6 +505,39 @@
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
 
+        /* 10페이지: 시스템 아키텍처 — 한 화면에 모두 보이도록 */
+        .slide-case.slide-case-p10 {
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .slide-case.slide-case-p10 .slide-title-with-icon {
+            flex-shrink: 0;
+            margin-bottom: 0.15em;
+            font-size: clamp(0.95em, calc(2 * var(--vmin)), 1.2em);
+        }
+
+        .slide-case.slide-case-p10 .case-msg-box {
+            margin: 0.2em 0;
+            padding: 0.3em 0.6em;
+            font-size: clamp(0.68em, calc(1.05 * var(--vmin)), 0.82em);
+            line-height: 1.35;
+        }
+
+        .slide-case.slide-case-p10 .case-image-wrap {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto;
+            max-height: calc(42 * var(--vh));
+            margin: 0.25em 0;
+        }
+
+        .slide-case.slide-case-p10 .case-image-wrap img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
         /* 11페이지: 유사 사례 검색 기반 AI 상담 지원 — 이미지 비율 조절 */
         .slide-case.slide-case-p11 {
             justify-content: flex-start;
@@ -512,14 +545,14 @@
         }
 
         .slide-case.slide-case-p11 .case-image-wrap {
-            height: calc(36 * var(--vh));
-            min-height: 180px;
-            max-height: calc(40 * var(--vh));
+            height: calc(48 * var(--vh));
+            min-height: 260px;
+            max-height: calc(52 * var(--vh));
         }
 
         .slide-case.slide-case-p11 .case-image-wrap img {
             max-height: 100%;
-            max-width: 95%;
+            max-width: 98%;
             object-fit: contain;
         }
 
@@ -3660,7 +3693,7 @@
         </div>
 
         <!-- 4. 시스템 아키텍처 - AI 서비스 추천 API 아키텍처 (10페이지) -->
-        <div class="slide slide-content slide-case">
+        <div class="slide slide-content slide-case slide-case-p10">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🏗</span> 4. 시스템 아키텍처 · AI 서비스
                 추천 API</h2>
             <p class="case-msg-box"><strong>핵심 메시지</strong>: "빠르고, 안전하며, 확장이 용이한 최신 기술의 집약체."</p>
