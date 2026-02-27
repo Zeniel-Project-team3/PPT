@@ -38,12 +38,13 @@
             justify-content: center;
         }
 
-        /* 16:9 프레젠테이션 비율 유지, 창 최대화 시에도 화살표 버튼이 가리지 않도록 여백 확보 */
-        /* 반응형: 컨테이너 크기 기준 스케일 변수 (JS에서 --container-width/height 설정) */
+        /* 정확히 16:9 비율 유지 (전체 화면 시에도), 여백 6%로 네비 버튼이 가리지 않도록 */
+        /* width/height = 16/9 보장: min(88vw, 88vh*16/9), min(88vh, 88vw*9/16) */
         .presentation-container {
             position: relative;
-            width: min(88vw, 156.44vh);
-            height: min(88vh, 49.5vw);
+            aspect-ratio: 16 / 9;
+            width: min(88vw, calc(88vh * 16 / 9));
+            height: min(88vh, calc(88vw * 9 / 16));
             max-width: 88vw;
             max-height: 88vh;
             overflow: hidden;
@@ -56,6 +57,7 @@
             font-size: clamp(11px, calc(2 * var(--vmin)), 16px);
         }
 
+        /* 전체 슬라이드: 적절한 padding으로 여백 통일, 그 안을 꽉 채워 구성 */
         .slide {
             display: none;
             position: absolute;
@@ -65,7 +67,7 @@
             height: 100%;
             background: #fff;
             color: #000000;
-            padding: clamp(8px, calc(1.8 * var(--vmin)), 22px);
+            padding: clamp(20px, calc(3.2 * var(--vmin)), 40px);
             overflow: hidden;
             box-sizing: border-box;
             opacity: 0;
@@ -89,6 +91,43 @@
         .slide.slide-important p,
         .slide.slide-important .subtitle,
         .slide.slide-important .product-name {
+            color: #fff;
+        }
+
+        /* 핵심 장표 대비(Contrast): 네이비 배경 + 흰색 글씨 — Title, Problem, Impact 시선 강조 */
+        .slide.slide-contrast {
+            background: linear-gradient(160deg, #0d1b2a 0%, #1b263b 50%, #0d1b2a 100%);
+            color: #fff;
+        }
+
+        .slide.slide-contrast h1,
+        .slide.slide-contrast h2,
+        .slide.slide-contrast h3,
+        .slide.slide-contrast p,
+        .slide.slide-contrast .subtitle,
+        .slide.slide-contrast .product-name,
+        .slide.slide-contrast .lead-question,
+        .slide.slide-contrast .problem-list,
+        .slide.slide-contrast .solution-list,
+        .slide.slide-contrast .impact-card,
+        .slide.slide-contrast .card-blur h3,
+        .slide.slide-contrast .card-blur p,
+        .slide.slide-contrast .list-icon {
+            color: #fff;
+        }
+
+        .slide.slide-contrast .card-blur {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .slide.slide-contrast .slide-title-with-icon {
+            color: #fff;
+        }
+
+        .slide.slide-contrast .title-slide h1,
+        .slide.slide-contrast .title-slide .subtitle,
+        .slide.slide-contrast .title-slide .product-name {
             color: #fff;
         }
 
@@ -464,6 +503,197 @@
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 11페이지: 유사 사례 검색 기반 AI 상담 지원 — 이미지 비율 조절 */
+        .slide-case.slide-case-p11 {
+            justify-content: flex-start;
+            overflow: auto;
+        }
+
+        .slide-case.slide-case-p11 .case-image-wrap {
+            height: calc(36 * var(--vh));
+            min-height: 180px;
+            max-height: calc(40 * var(--vh));
+        }
+
+        .slide-case.slide-case-p11 .case-image-wrap img {
+            max-height: 100%;
+            max-width: 95%;
+            object-fit: contain;
+        }
+
+        .slide-case.slide-case-p11 .case-image-row {
+            min-height: calc(22 * var(--vh));
+            flex: 0 0 auto;
+        }
+
+        .slide-case.slide-case-p11 .case-image-row img {
+            max-height: calc(24 * var(--vh));
+            min-height: 120px;
+            max-width: 48%;
+            object-fit: contain;
+        }
+
+        .slide-case.slide-case-p11 .lead-question,
+        .slide-case.slide-case-p11 p[style*="margin"] {
+            margin: 0.25em 0;
+            font-size: clamp(0.85em, calc(1.4 * var(--vmin)), 0.95em);
+        }
+
+        /* 스크린샷 목업(Mockup): 브라우저/디바이스 프레임 */
+        .mockup-device {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 12px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            background: #f5f5f7;
+        }
+
+        .mockup-device::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: linear-gradient(180deg, #ebebed 0%, #e0e0e4 100%);
+            border-bottom: 1px solid #d2d2d7;
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+        }
+
+        .mockup-device .mockup-dots {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        .mockup-device .mockup-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #c4c4c8;
+        }
+
+        .mockup-device .mockup-dots span:nth-child(1) {
+            background: #ff5f57;
+        }
+
+        .mockup-device .mockup-dots span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .mockup-device .mockup-dots span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .case-image-wrap.mockup-device,
+        .feature-img-wrap.mockup-device {
+            padding-top: 28px;
+        }
+
+        .case-image-wrap.mockup-device img,
+        .feature-img-wrap.mockup-device img {
+            border-radius: 0 0 14px 14px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .slide-page-feature-merged .feature-merged-item.mockup-device {
+            padding-top: 32px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .slide-page-feature-merged .feature-merged-item.mockup-device::before {
+            height: 32px;
+            border-radius: 14px 14px 0 0;
+        }
+
+        .slide-page-feature-merged .feature-merged-item.mockup-device .mockup-dots {
+            top: 12px;
+        }
+
+        .slide-page-feature-merged .feature-merged-item.mockup-device img {
+            border-radius: 0;
+        }
+
+        /* 15페이지: AI 상담 시나리오 결과 — 카드로 묶어 글자 떠다니는 느낌 제거 */
+        .slide-case.slide-case-scenario {
+            padding: clamp(12px, calc(2 * var(--vmin)), 24px);
+            justify-content: center;
+        }
+
+        .slide-case.slide-case-scenario .scenario-card {
+            width: 100%;
+            max-width: 98%;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8faf9;
+            border-radius: 14px;
+            padding: clamp(14px, calc(2.2 * var(--vmin)), 22px);
+            border: 1px solid rgba(0, 156, 100, 0.12);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .slide-case.slide-case-scenario .scenario-card .slide-title-with-icon {
+            flex-shrink: 0;
+            margin-bottom: 0.35em;
+        }
+
+        .slide-case.slide-case-scenario .scenario-image-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .slide-case.slide-case-scenario .scenario-image-wrap img {
+            max-height: calc(65 * var(--vh));
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: block;
+        }
+
+        .slide-case.slide-case-scenario .scenario-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            margin-top: clamp(10px, calc(1.5 * var(--vmin)), 18px);
+            flex-shrink: 0;
+        }
+
+        .slide-case.slide-case-scenario .scenario-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 156, 100, 0.12);
+            color: #0d3d2a;
+            padding: clamp(5px, calc(0.8 * var(--vmin)), 8px) clamp(10px, calc(1.4 * var(--vmin)), 14px);
+            border-radius: 999px;
+            font-size: clamp(0.68em, calc(1.1 * var(--vmin)), 0.8em);
+            font-weight: 600;
+        }
+
+        .slide-case.slide-case-scenario .scenario-legend-dot {
+            color: #009c64;
+            font-weight: 700;
         }
 
         .slide-case .case-image-wrap-svg {
@@ -885,13 +1115,23 @@
             font-weight: 600;
         }
 
-        /* 마지막 페이지(13) — 초록 배경 + 로고, 마무리 멘트 중앙 정렬 */
+        /* 마지막 페이지(22) — 초록 배경 + 로고, 마무리 멘트 세로 가운데 정렬 */
         .slide-end {
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: clamp(8px, calc(1.8 * var(--vmin)), 22px);
+        }
+
+        .slide-end .slide-end-center {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .slide-end .title-slide-inner {
@@ -922,10 +1162,16 @@
         }
 
         /* 역할 안내 — 노션 스타일 리스트 */
+        .slide-role .slide-title-with-icon {
+            margin-bottom: 0.25em;
+        }
+
         .role-list.notion-style {
             margin-top: clamp(12px, calc(2 * var(--vmin)), 24px);
             width: 100%;
             max-width: min(680px, 92%);
+            padding: 0 clamp(8px, calc(1.2 * var(--vmin)), 16px);
+            box-sizing: border-box;
             text-align: left;
             background: #fff;
             border: 1px solid rgba(55, 53, 47, 0.09);
@@ -1833,6 +2079,72 @@
             margin-top: 0;
         }
 
+        /* 도입 효과 2카드 전용 — 20페이지, 보기 좋게 */
+        .slide-impact-two {
+            padding: clamp(16px, calc(3 * var(--vmin)), 32px);
+        }
+
+        .slide-impact-two .slide-title-with-icon {
+            margin-bottom: 0.4em;
+        }
+
+        .slide-impact-two .impact-two-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, calc(4 * var(--vmin)), 48px);
+            max-width: min(920px, 94%);
+            margin: 0 auto;
+            flex: 1;
+            align-content: center;
+        }
+
+        .slide-impact-two .impact-two-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            padding: clamp(20px, calc(3.5 * var(--vmin)), 36px);
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .slide-impact-two .impact-two-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .slide-impact-two .impact-two-icon {
+            font-size: clamp(2.2em, calc(5 * var(--vmin)), 3.2em);
+            margin-bottom: 0.35em;
+            line-height: 1;
+        }
+
+        .slide-impact-two .impact-two-card h3 {
+            font-size: clamp(1.05em, calc(2 * var(--vmin)), 1.35em);
+            font-weight: 700;
+            color: #0d1b2a;
+            margin: 0 0 0.5em;
+            line-height: 1.3;
+        }
+
+        .slide-impact-two .impact-two-card p {
+            font-size: clamp(0.88em, calc(1.5 * var(--vmin)), 1.02em);
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+            .slide-impact-two .impact-two-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .navigation {
             position: fixed;
             bottom: clamp(12px, calc(2 * var(--vmin)), 28px);
@@ -2084,6 +2396,14 @@
             flex-direction: column;
             align-items: center;
             gap: clamp(16px, calc(3 * var(--vmin)), 28px);
+        }
+
+        .slide-demo .demo-page-title {
+            font-size: clamp(1.75em, calc(4 * var(--vmin)), 2.5em);
+            font-weight: 700;
+            color: #1d1d1f;
+            margin: 0 0 0.1em;
+            letter-spacing: -0.02em;
         }
 
         .slide-demo .demo-title-row {
@@ -2997,7 +3317,7 @@
     </div>
 
     <div class="presentation-container">
-        <!-- 슬라이드 1: Title (중요 슬라이드: 초록 배경) -->
+        <!-- 슬라이드 1: Title (표지: #009c64) -->
         <div class="slide active title-slide slide-important">
             <div class="slide-logo-header">
                 <img src="src/f_logo.png" alt="로고" />
@@ -3024,8 +3344,8 @@
             </ul>
         </div>
 
-        <!-- 슬라이드 3: 역할 안내 (권재현 팀장을 상담 총괄로 1번 배치) -->
-        <div class="slide slide-content">
+        <!-- 3페이지: 역할 안내 -->
+        <div class="slide slide-content slide-role">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">👥</span> 역할 안내</h2>
             <div class="role-list notion-style">
                 <div class="role-item">
@@ -3098,8 +3418,8 @@
             </div>
         </div>
 
-        <!-- 슬라이드 4: 문제 정의 (공감대 형성) -->
-        <div class="slide slide-content slide-problem-page">
+        <!-- 슬라이드 4: 문제 정의 (핵심 장표: 네이비 대비) -->
+        <div class="slide slide-content slide-problem-page slide-contrast">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">❓</span> 이런 고민, 있으신가요?</h2>
             <p class="lead-question">상담 기록과 데이터를 어떻게 하면 제대로 활용할 수 있을까요? — 먼저 현장의 목소리에 공감합니다.</p>
             <div class="problem-solution-list-wrap">
@@ -3171,28 +3491,30 @@
                     <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-search"></i></div>
                     <span class="user-flow-step-num">1</span>
                     <h3>상담 전 조회</h3>
-                    <p>자료 업로드 → AI 자동 요약·DB 저장 → 과거 이력·유사 사례 확인</p>
+                    <p>내담자 자료 업로드 -> 업로드된 자료로 임베딩 - DB 저장 -
+                        내담자 정보를 통한 상담 가이드라인 및 유사 사례 확인</p>
                 </div>
                 <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
                     <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-chat-dots"></i></div>
                     <span class="user-flow-step-num">2</span>
                     <h3>상담 중</h3>
-                    <p>csv/word/pdf 기록 시 AI 실시간 가이드 → 놓치기 쉬운 항목 채우기</p>
+                    <p>상담자료 작성(csv,pdf,word) 등
+                    </p>
                 </div>
                 <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
                     <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-cloud-upload"></i></div>
                     <span class="user-flow-step-num">3</span>
                     <h3>상담 후 업로드</h3>
-                    <p>작성 자료 업로드 → AI 자동 요약·DB 업데이트</p>
+                    <p>작성 자료 업로드 → AI 자동 요약 업데이트</p>
                 </div>
                 <div class="user-flow-arrow" aria-hidden="true"><i class="bi bi-chevron-right"></i></div>
                 <div class="user-flow-step">
                     <div class="user-flow-step-icon" aria-hidden="true"><i class="bi bi-check-circle"></i></div>
                     <span class="user-flow-step-num">4</span>
                     <h3>검수 및 마감</h3>
-                    <p>생성 데이터 확인 → 원클릭 수정·마감</p>
+                    <p>상담원의 검수 및 마감</p>
                 </div>
             </div>
         </div>
@@ -3342,7 +3664,7 @@
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🏗</span> 4. 시스템 아키텍처 · AI 서비스
                 추천 API</h2>
             <p class="case-msg-box"><strong>핵심 메시지</strong>: "빠르고, 안전하며, 확장이 용이한 최신 기술의 집약체."</p>
-            <div class="case-image-wrap">
+            <div class="case-image-wrap mockup-device">
                 <img src="src/AI_아키텍처.png" alt="ai-service 추천 API 아키텍처" />
             </div>
             <p class="case-msg-box"><strong>설명</strong>: <strong>Java Backend</strong>가 추천 API를 호출하면,
@@ -3353,14 +3675,13 @@
                 결합해 빈 결과 시에도 <strong>안정적인 추천</strong>이 가능합니다.</p>
         </div>
 
-        <!-- ========== 유사 사례 검색 기반 AI 상담 지원 시스템 사례 ========== -->
-        <!-- 슬라이드: 사례 인트로 + Top K 추출 개요 -->
-        <div class="slide slide-content slide-case">
+        <!-- ========== 11페이지: 유사 사례 검색 기반 AI 상담 지원 시스템 사례 ========== -->
+        <div class="slide slide-content slide-case slide-case-p11">
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🔍</span> 유사 사례 검색 기반 AI 상담 지원
                 시스템 사례</h2>
             <p class="lead-question">Top K(유사사례) 추출 결과</p>
             <p style="margin: 0.5em 0; font-size: 0.95em;">실제 취업 이력이 있는 케이스만 추출해서 내담자의 취업을 위한 유의미한 정보를 제공하고자 함</p>
-            <div class="case-image-wrap">
+            <div class="case-image-wrap mockup-device">
                 <img src="src/유사 사례 검색 기반 AI 상담 지원 시스템 사례.png" alt="유사 사례 검색 기반 AI 상담 지원 시스템 사례" />
             </div>
             <div class="case-image-row">
@@ -3490,7 +3811,7 @@
             <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🎯</span> 3. 추천 결과 (직무/급여 제안)
             </h2>
             <p class="case-msg-box"><strong>핵심 메시지</strong>: "정성적 판단을 넘어선 데이터 기반의 정량적 컨설팅."</p>
-            <div class="case-image-wrap">
+            <div class="case-image-wrap mockup-device">
                 <img src="src/추천 결과.png" alt="추천 결과 - 직무 or 급여수준 제안방식 고도화" />
             </div>
             <p class="case-msg-box"><strong>설명</strong>: AI가 분석한 최종 결과물입니다. 내담자의 학력, 역량, 나이 등을 종합하여 가장 취업 확률이 높은
@@ -3501,78 +3822,21 @@
             </p>
         </div>
 
-        <!-- 슬라이드 15: AI 상담 시나리오 결과 — 이미지 -->
-        <div class="slide slide-content slide-case">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🤖</span> AI 상담 시나리오 결과</h2>
-            <div class="case-image-wrap">
-                <img src="src/AI 상담 시나리오.png" alt="AI 상담 시나리오" />
-            </div>
-        </div>
-
-        <!-- ========== 페이지별 기능 소개: 16페이지 — 내담자 목록·조회·상세 (3개 묶음) ========== -->
-        <div class="slide slide-content slide-page-feature slide-page-feature-merged">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 — 내담자 관리
-            </h2>
-            <p class="lead-question">목록·조회·상세 조회</p>
-            <div class="feature-merged-grid cols-3">
-                <div class="feature-merged-item">
-                    <img src="src/내담자 목록.png" alt="내담자 목록" />
-                    <span class="item-highlight" style="top:6%;right:8%;">→ 내담자 등록</span>
-                    <span class="item-highlight" style="bottom:22%;left:8%;">→ 목록·페이지네이션</span>
-                    <span class="item-label">1. 내담자 목록</span>
-                </div>
-                <div class="feature-merged-item">
-                    <img src="src/내담자 조회.png" alt="내담자 조회" />
-                    <span class="item-highlight" style="top:8%;left:50%;transform:translateX(-50%);">→ 이름·연락처 검색</span>
-                    <span class="item-label">2. 내담자 조회</span>
-                </div>
-                <div class="feature-merged-item">
-                    <img src="src/내담자 정보 상세보기.png" alt="내담자 정보 상세 조회" />
-                    <span class="item-highlight" style="top:6%;right:8%;">→ 기본 정보·탭</span>
-                    <span class="item-highlight" style="top:18%;right:8%;">→ 상담 자료 준비</span>
-                    <span class="item-label">3. 내담자 정보 상세 조회</span>
+        <!-- 15페이지: AI 상담 시나리오 결과 — 카드로 묶어 보기 좋게 -->
+        <div class="slide slide-content slide-case slide-case-scenario">
+            <div class="scenario-card">
+                <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🤖</span> AI 상담 시나리오 결과
+                </h2>
+                <div class="scenario-image-wrap">
+                    <img src="src/AI 상담 시나리오.png" alt="AI 상담 시나리오" />
                 </div>
             </div>
         </div>
 
-        <!-- 페이지별 기능 소개: 17페이지 — 상담 내역 결과·상담 자료 준비 (2개 묶음) -->
-        <div class="slide slide-content slide-page-feature slide-page-feature-merged">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📱</span> 페이지별 기능 소개 — 상담
-                내역·자료 준비</h2>
-            <p class="lead-question">상담 내역 확인과 자료 준비</p>
-            <div class="feature-merged-grid cols-2">
-                <div class="feature-merged-item">
-                    <img src="src/상담 내역 결과.png" alt="상담 내역 결과" />
-                    <span class="item-highlight" style="bottom:28%;left:8%;">→ 상담일·요약</span>
-                    <span class="item-highlight" style="bottom:12%;right:8%;">→ 원문 상세</span>
-                    <span class="item-label">4. 상담 내역 결과</span>
-                </div>
-                <div class="feature-merged-item">
-                    <img src="src/상담 자료 준비.png" alt="상담 자료 준비" />
-                    <span class="item-highlight" style="top:8%;left:8%;">→ 내담자 검색</span>
-                    <span class="item-highlight" style="top:8%;right:8%;">→ 유사 사례·AI 추천</span>
-                    <span class="item-highlight" style="bottom:18%;right:8%;">→ 시나리오 내보내기</span>
-                    <span class="item-label">5. 상담 자료 준비</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 통합 2: AI 상담 시나리오 (5초 강조) -->
-        <div class="slide slide-content slide-page-feature slide-page-feature-merged feature-merged-single">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🤖</span> 페이지별 기능 소개 (2/2) —
-                AI 상담 시나리오</h2>
-            <div class="feature-img-wrap">
-                <img src="src/AI 상담 시나리오.png" alt="상담 시나리오 조회 중" />
-                <span class="feature-highlight highlight-5"><span class="arrow-icon">→</span> 상담 시나리오 조회 중...</span>
-            </div>
-            <div class="feature-5sec-wrap">
-                <span class="badge-5sec">⏱ AI 상담 시나리오 출력까지 단 5초</span>
-            </div>
-        </div>
-
-        <!-- 슬라이드: 직접 시연 — 맥 동영상 창 스타일 -->
+        <!-- 20페이지: 프로젝트 시연 — 맥 동영상 창 스타일 -->
         <div class="slide slide-content title-slide slide-demo">
             <div class="title-slide-inner">
+                <h2 class="demo-page-title">프로젝트 시연</h2>
                 <div class="mac-window" role="img" aria-label="데모 동영상 창">
                     <div class="mac-title-bar">
                         <div class="mac-traffic">
@@ -3592,27 +3856,19 @@
             </div>
         </div>
 
-        <!-- 슬라이드: 기대 효과 — 안심 -->
-        <div class="slide slide-content">
-            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📈</span> 도입하면 어떤 효과가 있나요?
-            </h2>
-            <p class="lead-question">상담 품질과 업무 효율을 동시에 높이는 ROI — 도입 시 예상 효과로 불안을 줄이고 안심을 드립니다.</p>
-            <div class="impact-grid">
-                <div class="impact-card card-blur">
-                    <h3><span class="list-icon">⏱</span> 상담 준비 시간 60% 이상 절감</h3>
+        <!-- 20페이지: 도입 효과 — 2가지 핵심만, 보기 좋게 -->
+        <div class="slide slide-content slide-contrast slide-impact-two">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📈</span> 도입 효과</h2>
+            <div class="impact-two-grid">
+                <div class="impact-two-card">
+                    <div class="impact-two-icon">⏱</div>
+                    <h3>상담 준비 시간 60% 이상 절감</h3>
                     <p>반복 서류·데이터 조회를 AI가 대신해, 상담 본업에 쓸 수 있는 시간이 늘어납니다.</p>
                 </div>
-                <div class="impact-card card-blur">
-                    <h3><span class="list-icon">⚖</span> 상담 품질의 상향 평준화</h3>
+                <div class="impact-two-card">
+                    <div class="impact-two-icon">⚖</div>
+                    <h3>상담 품질의 상향 평준화</h3>
                     <p>유사 사례 기반 데이터 상담으로 전환해, 상담사 간 역량 편차를 줄입니다.</p>
-                </div>
-                <div class="impact-card card-blur">
-                    <h3><span class="list-icon">🎯</span> 상담 성공률 향상</h3>
-                    <p>내담자 맞춤 역량 진단과 직무 매칭으로 취업 성공률을 높일 수 있습니다.</p>
-                </div>
-                <div class="impact-card card-blur">
-                    <h3><span class="list-icon">📊</span> 기관 평가 신뢰도 확보</h3>
-                    <p>표준화된 데이터 축적으로 상담 품질 관리를 체계적으로 증빙할 수 있습니다.</p>
                 </div>
             </div>
         </div>
@@ -3633,13 +3889,15 @@
             </div>
         </div>
 
-        <!-- 슬라이드 13: 마지막 페이지 — 마무리 멘트 (초록 배경 + 로고만 이 페이지에) -->
+        <!-- 22페이지: 마지막 페이지 — 마무리 멘트 (#009c64), 세로 가운데 정렬 -->
         <div class="slide slide-end slide-important" aria-label="마지막 슬라이드: 감사합니다">
             <div class="slide-logo-header">
                 <img src="src/f_logo.png" alt="로고" />
             </div>
-            <div class="title-slide-inner">
-                <h1>감사합니다</h1>
+            <div class="slide-end-center">
+                <div class="title-slide-inner">
+                    <h1>감사합니다</h1>
+                </div>
             </div>
         </div>
     </div>
