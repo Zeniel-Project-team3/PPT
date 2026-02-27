@@ -1,0 +1,3224 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Counsel Assistant - 프레젠테이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 반응형 폴백: 컨테이너 밖(네비 등)은 뷰포트 기준 유지 */
+        :root {
+            --vmin: 1vmin;
+            --vh: 1vh;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #1a1a1a;
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 16:9 프레젠테이션 비율 유지, 창 최대화 시에도 화살표 버튼이 가리지 않도록 여백 확보 */
+        /* 반응형: 컨테이너 크기 기준 스케일 변수 (JS에서 --container-width/height 설정) */
+        .presentation-container {
+            position: relative;
+            width: min(88vw, 156.44vh);
+            height: min(88vh, 49.5vw);
+            max-width: 88vw;
+            max-height: 88vh;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+            --container-width: 100vw;
+            --container-height: 100vh;
+            --container-min: min(var(--container-width), var(--container-height));
+            --vmin: calc(var(--container-min) * 0.01);
+            --vh: calc(var(--container-height) * 0.01);
+            font-size: clamp(11px, calc(2 * var(--vmin)), 16px);
+        }
+
+        .slide {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            color: #000000;
+            padding: clamp(8px, calc(1.8 * var(--vmin)), 22px);
+            overflow: hidden;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* 중요 슬라이드: 배경 #009c64, 글자 흰색 */
+        .slide.slide-important {
+            background: #009c64;
+            color: #fff;
+        }
+
+        .slide.slide-important h1,
+        .slide.slide-important h2,
+        .slide.slide-important h3,
+        .slide.slide-important p,
+        .slide.slide-important .subtitle,
+        .slide.slide-important .product-name {
+            color: #fff;
+        }
+
+        /* Q&A 전용 슬라이드 (12페이지) — 심플 중앙 정렬 */
+        .slide-qa {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fbfbfd;
+        }
+
+        .slide-qa .qa-slide-inner {
+            text-align: center;
+        }
+
+        .slide-qa .qa-title {
+            font-size: clamp(2.2em, calc(6 * var(--vmin)), 3.5em);
+            color: #1d1d1f;
+            margin-bottom: 0.4em;
+        }
+
+        .slide-qa .qa-lead {
+            font-size: clamp(1em, calc(1.8 * var(--vmin)), 1.25em);
+            color: #6e6e73;
+        }
+
+        .slide.active {
+            display: flex;
+            z-index: 1;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.active.slide-from-prev {
+            animation: slideInFromLeft 0.45s ease-out forwards;
+        }
+
+        .slide.active.slide-from-next {
+            animation: slideInFromRight 0.45s ease-out forwards;
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide.slide-architecture.active {
+            display: flex;
+        }
+
+        .slide-architecture .architecture-slide-body {
+            width: 100%;
+            max-width: min(960px, 98%);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 슬라이드 등장 시 콘텐츠 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide.active .slide-title-with-icon {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .slide.active .lead-question {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.07s forwards;
+        }
+
+        .slide.active .role-list .role-item {
+            opacity: 0;
+            animation: fadeInUp 0.45s ease-out forwards;
+        }
+
+        .slide.active .role-list .role-item:nth-child(1) {
+            animation-delay: 0.12s;
+        }
+
+        .slide.active .role-list .role-item:nth-child(2) {
+            animation-delay: 0.19s;
+        }
+
+        .slide.active .role-list .role-item:nth-child(3) {
+            animation-delay: 0.26s;
+        }
+
+        .slide.active .role-list .role-item:nth-child(4) {
+            animation-delay: 0.33s;
+        }
+
+        .slide.active .role-list .role-item:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .slide.active .problem-list,
+        .slide.active .solution-list {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .slide.active .problem-list:nth-of-type(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .problem-list:nth-of-type(2) {
+            animation-delay: 0.2s;
+        }
+
+        .slide.active .problem-list:nth-of-type(3) {
+            animation-delay: 0.3s;
+        }
+
+        .slide.active .solution-list:nth-of-type(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .solution-list:nth-of-type(2) {
+            animation-delay: 0.22s;
+        }
+
+        .slide.active .key-features-grid .key-feature-card {
+            opacity: 0;
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+
+        .slide.active .key-features-grid .key-feature-card:nth-child(1) {
+            animation-delay: 0.12s;
+        }
+
+        .slide.active .key-features-grid .key-feature-card:nth-child(2) {
+            animation-delay: 0.22s;
+        }
+
+        .slide.active .key-features-grid .key-feature-card:nth-child(3) {
+            animation-delay: 0.32s;
+        }
+
+        .slide.active .job-fit-chart-card {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.15s forwards;
+        }
+
+        .slide.active .job-fit-grid .job-fit-chart-card:nth-child(2) {
+            animation-delay: 0.25s;
+        }
+
+        .slide.active .user-flow-step {
+            opacity: 0;
+            animation: fadeInUp 0.45s ease-out forwards;
+        }
+
+        .slide.active .user-flow-row .user-flow-step:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .user-flow-row .user-flow-step:nth-child(3) {
+            animation-delay: 0.22s;
+        }
+
+        .slide.active .user-flow-row .user-flow-step:nth-child(5) {
+            animation-delay: 0.34s;
+        }
+
+        .slide.active .user-flow-row .user-flow-step:nth-child(7) {
+            animation-delay: 0.46s;
+        }
+
+        .slide.active .user-flow-row .user-flow-step:nth-child(9) {
+            animation-delay: 0.58s;
+        }
+
+        .slide.active .user-flow-arrow {
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.18s forwards;
+        }
+
+        .slide.active .architecture-slide-header {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .slide.active .architecture-diagram {
+            opacity: 0;
+            animation: fadeInUp 0.55s ease-out 0.1s forwards;
+        }
+
+        .slide.active .architecture-cards .feature-box {
+            opacity: 0;
+            animation: fadeInUp 0.45s ease-out forwards;
+        }
+
+        .slide.active .architecture-cards .feature-box:nth-child(1) {
+            animation-delay: 0.25s;
+        }
+
+        .slide.active .architecture-cards .feature-box:nth-child(2) {
+            animation-delay: 0.35s;
+        }
+
+        .slide.active .notion-mock {
+            opacity: 0;
+            animation: fadeInUp 0.55s ease-out 0.12s forwards;
+        }
+
+        .slide.active .impact-grid .impact-card {
+            opacity: 0;
+            animation: fadeInUp 0.45s ease-out forwards;
+        }
+
+        .slide.active .impact-grid .impact-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .impact-grid .impact-card:nth-child(2) {
+            animation-delay: 0.18s;
+        }
+
+        .slide.active .impact-grid .impact-card:nth-child(3) {
+            animation-delay: 0.26s;
+        }
+
+        .slide.active .impact-grid .impact-card:nth-child(4) {
+            animation-delay: 0.34s;
+        }
+
+        .slide.active.title-slide .title-slide-inner h1 {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .slide.active.title-slide .title-slide-inner .subtitle {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.15s forwards;
+        }
+
+        .slide.active.slide-qa .qa-title {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .slide.active.slide-qa .qa-lead {
+            opacity: 0;
+            animation: fadeInUp 0.45s ease-out 0.12s forwards;
+        }
+
+        /* 유사 사례 검색 기반 AI 상담 지원 시스템 사례 섹션 */
+        .slide.slide-case {
+            text-align: left;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .slide-case .case-title {
+            font-size: clamp(1.1em, calc(2.5 * var(--vmin)), 1.5em);
+            color: #009c64;
+            margin-bottom: 0.4em;
+            font-weight: 600;
+        }
+
+        .slide-case .case-image-wrap {
+            margin: 0.35em 0;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .slide-case .case-image-wrap img {
+            max-height: calc(24 * var(--vh));
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .slide-case .case-image-wrap-svg {
+            min-height: calc(18 * var(--vh));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide-case .case-image-wrap-svg svg.ai-recommend-arch {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: calc(28 * var(--vh));
+            min-height: 180px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .slide-case .case-image-row {
+            display: flex;
+            gap: 0.5em;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin: 0.35em 0;
+        }
+
+        .slide-case .case-image-row img {
+            max-height: calc(20 * var(--vh));
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .slide-case .case-msg-box {
+            background: #f5f9f7;
+            border-left: 4px solid #009c64;
+            padding: 0.4em 0.7em;
+            margin: 0.3em 0;
+            font-size: clamp(0.72em, calc(1.15 * var(--vmin)), 0.88em);
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+
+        /* 프롬프트 슬라이드용 코드 블록 — 좌우 여백 유지, 스크롤 없이 꽉 차게 */
+        .slide-case .case-prompt-code {
+            margin: 0.25em clamp(12px, calc(2.2 * var(--vmin)), 28px);
+            text-align: left;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-case .case-prompt-code pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: clamp(8px, calc(1.2 * var(--vmin)), 14px) clamp(12px, calc(1.8 * var(--vmin)), 20px);
+            border-radius: 8px;
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', 'SF Mono', monospace;
+            /* 코드블럭 크기에 맞춘 폰트 */
+            font-size: min(0.88em, calc(1.55 * var(--vh)));
+            line-height: 1.3;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .slide-case .case-prompt-code pre code {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .slide-case .case-prompt-code code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* 코드 블록 문법 강조 (13페이지 프롬프트) */
+        .slide-case .case-prompt-code code .code-name {
+            color: #9cdcfe;
+        }
+
+        .slide-case .case-prompt-code code .code-attr {
+            color: #9cdcfe;
+        }
+
+        .slide-case .case-prompt-code code .code-str {
+            color: #ce9178;
+        }
+
+        .slide-case .case-prompt-code code .code-func {
+            color: #dcdcaa;
+        }
+
+        .slide-case .case-prompt-code code .code-keyword {
+            color: #c586c0;
+        }
+
+        .slide-case .case-prompt-code code .code-pun {
+            color: #d4d4d4;
+        }
+
+        .slide-case .case-prompt-code code .code-num {
+            color: #b5cea8;
+        }
+
+        .slide-case .case-msg-box strong {
+            color: #1a1a1a;
+        }
+
+        .slide.active .case-image-wrap,
+        .slide.active .case-image-row,
+        .slide.active .case-msg-box,
+        .slide.active .case-prompt-code {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .slide.active .case-msg-box:nth-of-type(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .case-msg-box:nth-of-type(2) {
+            animation-delay: 0.2s;
+        }
+
+        .slide.active .case-msg-box:nth-of-type(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes arrowAnim {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: translateX(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(6px);
+            }
+        }
+
+        .flow-arrow {
+            animation: arrowAnim 1.8s ease-in-out infinite;
+        }
+
+        .slide h1 {
+            font-size: clamp(1.5em, calc(4 * var(--vmin)), 2.8em);
+            color: #000000;
+            margin-bottom: 0.35em;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .slide h2 {
+            font-size: clamp(1.25em, calc(2.9 * var(--vmin)), 1.8em);
+            color: #000000;
+            margin-bottom: 0.3em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.2em;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+        }
+
+        .slide h3 {
+            font-size: clamp(1em, calc(1.75 * var(--vmin)), 1.25em);
+            color: #000000;
+            margin: 0.3em 0 0.2em 0;
+            font-weight: 600;
+        }
+
+        .slide p {
+            font-size: clamp(0.88em, calc(1.5 * var(--vmin)), 1.05em);
+            line-height: 1.55;
+            color: #000000;
+            margin-bottom: 0.25em;
+        }
+
+        .slide img:not(.slide-logo-header img) {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .slide ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .slide li {
+            font-size: clamp(0.82em, calc(1.4 * var(--vmin)), 0.95em);
+            line-height: 1.55;
+            color: #000000;
+            margin-bottom: 0.2em;
+            padding-left: 1.5em;
+            position: relative;
+        }
+
+        .slide li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #666;
+            font-weight: normal;
+            font-size: 1.2em;
+        }
+
+        .title-slide {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+            height: 100%;
+        }
+
+        .title-slide .title-slide-inner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex: 0 0 auto;
+        }
+
+        .title-slide h1 {
+            font-size: clamp(1.6em, calc(4.2 * var(--vmin)), 3em);
+            margin-bottom: 0.3em;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .slide.slide-important .title-slide h1,
+        .slide.slide-important .title-slide .subtitle,
+        .slide.slide-important .title-slide .product-name {
+            color: #fff;
+        }
+
+        .title-slide .subtitle {
+            font-size: clamp(0.9em, calc(1.75 * var(--vmin)), 1.15em);
+            color: #555;
+            font-style: normal;
+            margin-top: 0.35em;
+            max-width: 90%;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+
+        .title-slide .product-name {
+            font-size: clamp(1.1em, calc(2.2 * var(--vmin)), 1.7em);
+            color: #333;
+            margin-top: 0.4em;
+            font-weight: 600;
+        }
+
+        /* 마지막 페이지(13) — 초록 배경 + 로고, 마무리 멘트 중앙 정렬 */
+        .slide-end {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-end .title-slide-inner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .slide-logo-header {
+            position: absolute;
+            top: clamp(10px, calc(1.8 * var(--vmin)), 24px);
+            left: clamp(12px, calc(2 * var(--vmin)), 28px);
+            z-index: 10;
+        }
+
+        .slide-logo-header img {
+            height: clamp(24px, calc(4 * var(--vmin)), 44px);
+            width: auto;
+        }
+
+        /* 역할 안내 — 노션 스타일 리스트 */
+        .role-list.notion-style {
+            margin-top: clamp(12px, calc(2 * var(--vmin)), 24px);
+            width: 100%;
+            max-width: min(680px, 92%);
+            text-align: left;
+            background: #fff;
+            border: 1px solid rgba(55, 53, 47, 0.09);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .role-list .role-item {
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(12px, calc(1.8 * var(--vmin)), 16px);
+            padding: clamp(10px, calc(1.4 * var(--vmin)), 14px) clamp(14px, calc(2 * var(--vmin)), 20px);
+            border-bottom: 1px solid rgba(55, 53, 47, 0.06);
+            transition: background 0.2s ease;
+        }
+
+        .role-list .role-item:last-child {
+            border-bottom: none;
+        }
+
+        .role-list .role-item:hover {
+            background: rgba(55, 53, 47, 0.03);
+        }
+
+        .role-avatar {
+            flex-shrink: 0;
+            width: clamp(36px, calc(5 * var(--vmin)), 44px);
+            height: clamp(36px, calc(5 * var(--vmin)), 44px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .role-avatar svg {
+            width: 55%;
+            height: 55%;
+        }
+
+        .role-avatar-1 {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        }
+
+        .role-avatar-2 {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        }
+
+        .role-avatar-3 {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .role-avatar-4 {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .role-avatar-5 {
+            background: linear-gradient(135deg, #ec4899, #be185d);
+        }
+
+        .role-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .role-name {
+            display: block;
+            color: #37352f;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 6px;
+            font-size: 0.75em;
+            font-weight: 500;
+            color: #6d28d9;
+            background: rgba(109, 40, 217, 0.12);
+            border-radius: 4px;
+        }
+
+        .role-desc {
+            color: #787774;
+            font-size: 0.9em;
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 90%), 1fr));
+            gap: clamp(8px, calc(1.5 * var(--vmin)), 18px);
+            margin-top: clamp(8px, calc(1.8 * var(--vmin)), 20px);
+            width: 100%;
+            max-width: min(920px, 95%);
+            justify-items: center;
+        }
+
+        .role-card {
+            background: rgba(248, 250, 252, 0.75);
+            padding: clamp(10px, 1.calc(6 * var(--vmin)), 16px) clamp(12px, calc(1.8 * var(--vmin)), 18px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            border-left: 4px solid #009c64;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-card strong {
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .problem-list,
+        .solution-list,
+        .feature-list {
+            background: rgba(248, 250, 252, 0.9);
+            padding: clamp(10px, 1.calc(6 * var(--vmin)), 18px) clamp(12px, calc(1.8 * var(--vmin)), 22px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            margin: clamp(6px, calc(1.2 * var(--vmin)), 14px) auto;
+            border-left: 4px solid #c53030;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: min(720px, 92%);
+            text-align: left;
+        }
+
+        .solution-list {
+            border-left-color: #009c64;
+        }
+
+        /* 블러 카드 공통 */
+        .card-blur {
+            background: rgba(255, 255, 255, 0.75) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 타이틀 + 아이콘, 리드 문장 */
+        .slide-title-with-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .title-icon {
+            font-size: 0.9em;
+            opacity: 0.95;
+        }
+
+        .lead-question {
+            font-size: clamp(0.9em, calc(1.45 * var(--vmin)), 1.05em);
+            color: #555;
+            margin-bottom: 0.35em;
+            text-align: center;
+            font-weight: 500;
+            max-width: min(680px, 92%);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 목차 슬라이드 (2페이지) - 애플 스타일: 가로·세로 꽉 차되 적절한 여백 */
+        .slide-toc {
+            text-align: left;
+            padding: clamp(28px, calc(6 * var(--vmin)), 56px);
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+            min-height: 100%;
+            box-sizing: border-box;
+        }
+
+        .slide-toc .slide-title-with-icon {
+            flex-shrink: 0;
+            margin-bottom: clamp(20px, calc(3.5 * var(--vmin)), 40px);
+            justify-content: flex-start;
+        }
+
+        .slide-toc .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: auto;
+            gap: clamp(16px, calc(2.5 * var(--vmin)), 28px);
+            width: 100%;
+            max-width: 920px;
+            margin: 0 auto;
+            align-content: start;
+            justify-content: start;
+        }
+
+        .slide-toc .toc-list li {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: clamp(16px, calc(2.5 * var(--vmin)), 22px) clamp(20px, calc(3 * var(--vmin)), 28px);
+            position: relative;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            font-size: clamp(0.95em, calc(1.5 * var(--vmin)), 1.08em);
+            line-height: 1.35;
+            color: #1d1d1f;
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            cursor: default;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .slide-toc .toc-list li:hover {
+            background: #fbfbfd;
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .slide-toc .toc-num {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.06);
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .slide-toc .toc-list li:before {
+            content: none;
+        }
+
+        @media (max-width: 700px) {
+            .slide-toc .toc-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .list-icon {
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+        .list-icon-check {
+            color: #009c64;
+            font-weight: 700;
+        }
+
+        .feature-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: clamp(12px, calc(1.8 * var(--vmin)), 18px) clamp(14px, calc(2 * var(--vmin)), 20px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 10px);
+            margin: clamp(8px, calc(1.2 * var(--vmin)), 12px) 0;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-box h3 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        /* 유저 시나리오 2x2 그리드 (7페이지) */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(14px, calc(2.2 * var(--vmin)), 28px);
+            margin-top: clamp(14px, calc(2 * var(--vmin)), 24px);
+        }
+
+        .slide-scenario .scenario-step {
+            padding-left: clamp(14px, calc(2 * var(--vmin)), 20px);
+        }
+
+        .slide-scenario .scenario-step:before {
+            display: none;
+        }
+
+        .scenario-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(28px, calc(4 * var(--vmin)), 40px);
+            height: clamp(28px, calc(4 * var(--vmin)), 40px);
+            border-radius: 50%;
+            background: #009c64;
+            color: #fff;
+            font-weight: 700;
+            font-size: clamp(0.9em, 1.calc(4 * var(--vmin)), 1.1em);
+            margin-bottom: 0.5em;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .scenario-num {
+            background: linear-gradient(135deg, #34c759, #30d158);
+            box-shadow: 0 2px 10px rgba(52, 199, 89, 0.35);
+        }
+
+        @media (max-width: 700px) {
+            .scenario-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scenario-timeline {
+            position: relative;
+            padding-left: clamp(22px, calc(3.2 * var(--vmin)), 38px);
+            margin: clamp(10px, calc(1.8 * var(--vmin)), 24px) 0;
+        }
+
+        .scenario-timeline:before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ddd;
+        }
+
+        .scenario-step {
+            position: relative;
+            margin-bottom: clamp(10px, 1.calc(6 * var(--vmin)), 20px);
+            background: rgba(248, 250, 252, 0.8);
+            padding: clamp(10px, calc(1.5 * var(--vmin)), 16px) clamp(12px, calc(1.7 * var(--vmin)), 18px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .scenario-step:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        .scenario-step:before {
+            content: "";
+            position: absolute;
+            left: -30px;
+            top: 22px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #009c64;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 156, 100, 0.3);
+        }
+
+        /* 7페이지: 유저 시나리오 플로우 (가로 흐름 + 화살표) */
+        .slide-user-flow {
+            display: flex;
+            flex-direction: column;
+            padding: clamp(10px, calc(2 * var(--vmin)), 24px);
+        }
+
+        .slide-user-flow .lead-question {
+            text-align: center;
+            margin-bottom: clamp(12px, calc(2 * var(--vmin)), 20px);
+            font-size: clamp(0.9em, calc(1.5 * var(--vmin)), 1.05em);
+            color: #555;
+        }
+
+        .user-flow-row {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            margin-top: clamp(4px, calc(1 * var(--vmin)), 12px);
+        }
+
+        .user-flow-step {
+            flex: 1;
+            min-width: 0;
+            max-width: clamp(160px, calc(22 * var(--vmin)), 220px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: clamp(10px, calc(1.5 * var(--vmin)), 16px) clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: clamp(10px, calc(1.5 * var(--vmin)), 16px);
+            border: 1px solid rgba(0, 156, 100, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .user-flow-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(0, 156, 100, 0.12);
+        }
+
+        .user-flow-step-icon {
+            width: clamp(40px, calc(6 * var(--vmin)), 56px);
+            height: clamp(40px, calc(6 * var(--vmin)), 56px);
+            margin-bottom: clamp(6px, calc(1 * var(--vmin)), 10px);
+            flex-shrink: 0;
+        }
+
+        .user-flow-step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(26px, calc(3.5 * var(--vmin)), 36px);
+            height: clamp(26px, calc(3.5 * var(--vmin)), 36px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #009c64, #00b374);
+            color: #fff;
+            font-weight: 700;
+            font-size: clamp(0.85em, calc(1.3 * var(--vmin)), 1em);
+            margin-bottom: clamp(4px, 0.calc(8 * var(--vmin)), 8px);
+        }
+
+        .user-flow-step h3 {
+            font-size: clamp(0.95em, 1.calc(6 * var(--vmin)), 1.1em);
+            margin: 0 0 clamp(4px, 0.calc(8 * var(--vmin)), 8px) 0;
+            color: #1a1a1a;
+            line-height: 1.3;
+        }
+
+        .user-flow-step p {
+            font-size: clamp(0.75em, calc(1.25 * var(--vmin)), 0.9em);
+            line-height: 1.45;
+            color: #555;
+            margin: 0;
+        }
+
+        .user-flow-arrow {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 clamp(4px, calc(1 * var(--vmin)), 12px);
+            color: #009c64;
+        }
+
+        .user-flow-arrow svg {
+            width: clamp(24px, calc(4 * var(--vmin)), 36px);
+            height: clamp(24px, calc(4 * var(--vmin)), 36px);
+            opacity: 0.85;
+            animation: arrowFlow 2s ease-in-out infinite;
+        }
+
+        @keyframes arrowFlow {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: translateX(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(4px);
+            }
+        }
+
+        /* 7페이지: 애플 스타일 + 엑셀 데이터 테이블 */
+        .slide-user-flow {
+            background: #fbfbfd;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Malgun Gothic', sans-serif;
+        }
+
+        .slide-user-flow .slide-title-with-icon {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1d1d1f;
+            font-size: clamp(1.5em, calc(4 * var(--vmin)), 2em);
+        }
+
+        .slide-user-flow .data-extract-section {
+            width: 100%;
+            max-width: 96%;
+            margin: 0 auto clamp(14px, calc(2 * var(--vmin)), 22px);
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #d4d4d4;
+            overflow: hidden;
+        }
+
+        .slide-user-flow .data-extract-caption {
+            padding: clamp(8px, calc(1.2 * var(--vmin)), 12px) clamp(12px, calc(2 * var(--vmin)), 20px);
+            background: linear-gradient(180deg, #f5f5f7 0%, #ebebed 100%);
+            border-bottom: 1px solid #e5e5e7;
+            font-size: clamp(0.8em, calc(1.3 * var(--vmin)), 0.95em);
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+
+        .slide-user-flow .data-extract-caption .caption-sub {
+            display: block;
+            font-weight: 400;
+            color: #86868b;
+            font-size: 0.92em;
+            margin-top: 2px;
+        }
+
+        .slide-user-flow .excel-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #fff;
+            border: 1px solid #b4b4b4;
+            border-radius: 0;
+            box-shadow: inset 0 0 0 1px #fff, 1px 1px 0 0 #e0e0e0;
+        }
+
+        .slide-user-flow .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.7em, calc(1.15 * var(--vmin)), 0.85em);
+            font-family: 'Malgun Gothic', '맑은 고딕', Calibri, sans-serif;
+            table-layout: fixed;
+        }
+
+        /* 엑셀 스타일: 행 번호 열 */
+        .slide-user-flow .excel-table th.excel-col-row,
+        .slide-user-flow .excel-table td.excel-col-row {
+            width: 2.2em;
+            min-width: 2.2em;
+            max-width: 2.2em;
+            background: #f2f2f2;
+            color: #5f5f5f;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #d4d4d4;
+            padding: clamp(4px, 0.calc(8 * var(--vmin)), 6px) 4px;
+        }
+
+        .slide-user-flow .excel-table th {
+            background: #f2f2f2;
+            color: #000;
+            font-weight: 600;
+            text-align: left;
+            padding: clamp(5px, calc(0.9 * var(--vmin)), 8px) clamp(6px, calc(1 * var(--vmin)), 10px);
+            border: 1px solid #d4d4d4;
+            white-space: nowrap;
+        }
+
+        .slide-user-flow .excel-table td {
+            padding: clamp(4px, 0.calc(8 * var(--vmin)), 6px) clamp(6px, calc(1 * var(--vmin)), 10px);
+            border: 1px solid #d4d4d4;
+            color: #000;
+            background: #fff;
+        }
+
+        .slide-user-flow .excel-table tbody tr:nth-child(even) td:not(.excel-col-row) {
+            background: #f9fafb;
+        }
+
+        .slide-user-flow .excel-table tbody tr:hover td:not(.excel-col-row) {
+            background: #e8f4fc;
+        }
+
+        .slide-user-flow .data-extract-lead {
+            text-align: center;
+            font-size: clamp(0.8em, calc(1.25 * var(--vmin)), 0.95em);
+            color: #86868b;
+            margin-top: clamp(6px, calc(1 * var(--vmin)), 10px);
+            margin-bottom: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            font-weight: 500;
+        }
+
+        .slide-user-flow .lead-question {
+            color: #86868b;
+            font-weight: 500;
+        }
+
+        .slide-user-flow .user-flow-step {
+            background: #fff;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+
+        .slide-user-flow .user-flow-step:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .slide-user-flow .user-flow-step-num {
+            background: #1d1d1f;
+            color: #fff;
+        }
+
+        .slide-user-flow .user-flow-step h3 {
+            color: #1d1d1f;
+            font-weight: 600;
+        }
+
+        .slide-user-flow .user-flow-step p {
+            color: #6e6e73;
+        }
+
+        .slide-user-flow .user-flow-arrow {
+            color: #86868b;
+        }
+
+        @media (max-width: 700px) {
+            .user-flow-row {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: clamp(8px, calc(1.5 * var(--vmin)), 16px);
+            }
+
+            .user-flow-step {
+                max-width: 100%;
+            }
+
+            .user-flow-arrow {
+                transform: rotate(90deg);
+                padding: 0;
+            }
+        }
+
+        /* 시스템 아키텍처 슬라이드: 스크롤 없이 화면에 맞춤 */
+        .slide.slide-architecture {
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            padding: clamp(10px, calc(2 * var(--vmin)), 20px);
+            align-items: center;
+            text-align: center;
+        }
+
+        .slide-architecture .architecture-slide-header {
+            flex-shrink: 0;
+            margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .slide-architecture .architecture-slide-header h2 {
+            margin-bottom: 4px;
+        }
+
+        .slide-architecture .architecture-slide-header p {
+            margin-bottom: 0;
+            font-size: clamp(0.85em, 1.calc(4 * var(--vmin)), 0.98em);
+        }
+
+        .slide-architecture .architecture-slide-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-architecture .architecture-diagram {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            margin: 0;
+            border-radius: 8px;
+        }
+
+        .slide-architecture .architecture-diagram svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .slide-architecture .architecture-cards {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+        }
+
+        .slide-architecture .architecture-cards .feature-box {
+            margin: 0;
+            padding: clamp(8px, calc(1.2 * var(--vmin)), 14px) clamp(10px, calc(1.5 * var(--vmin)), 18px);
+        }
+
+        .slide-architecture .architecture-cards .feature-box h3 {
+            margin: 0 0 0.2em 0;
+            font-size: clamp(0.9em, 1.calc(4 * var(--vmin)), 1em);
+        }
+
+        .slide-architecture .architecture-cards .feature-box p {
+            margin: 0;
+            font-size: clamp(0.75em, calc(1.15 * var(--vmin)), 0.88em);
+            line-height: 1.5;
+        }
+
+        .architecture-diagram {
+            background: #fafafa;
+            padding: clamp(14px, calc(2.2 * var(--vmin)), 32px);
+            border-radius: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            margin: clamp(12px, calc(2 * var(--vmin)), 24px) 0;
+            text-align: center;
+            border: 1px solid #e8e8e8;
+            max-width: 100%;
+        }
+
+        .architecture-diagram svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .arch-box {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 1.5;
+        }
+
+        .arch-box-server {
+            fill: #f0f4f8;
+            stroke: #2c5282;
+            stroke-width: 2;
+        }
+
+        .arch-box-docker {
+            fill: #e6f2ff;
+            stroke: #3182ce;
+            stroke-width: 1.5;
+        }
+
+        .arch-text {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            fill: #222;
+        }
+
+        .arch-text-small {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 백엔드 아키텍처 슬라이드: 계층별 색상 */
+        .slide-backend-arch .arch-layer-api {
+            fill: #2d3748;
+            stroke: #1a202c;
+        }
+
+        .slide-backend-arch .arch-layer-controller {
+            fill: #ebf8ff;
+            stroke: #3182ce;
+        }
+
+        .slide-backend-arch .arch-layer-service {
+            fill: #e6fffa;
+            stroke: #319795;
+        }
+
+        .slide-backend-arch .arch-layer-repo {
+            fill: #fffaf0;
+            stroke: #dd6b20;
+        }
+
+        .slide-backend-arch .arch-layer-utility {
+            fill: #faf5ff;
+            stroke: #805ad5;
+        }
+
+        .slide-backend-arch .arch-layer-external {
+            fill: #e6fffa;
+            stroke: #319795;
+        }
+
+        .slide-backend-arch .arch-layer-db {
+            fill: #f7fafc;
+            stroke: #4a5568;
+            stroke-width: 2;
+        }
+
+        .slide-backend-arch .arch-group-label {
+            font-size: 10px;
+            font-weight: 700;
+            fill: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(220px, 85%), 1fr));
+            gap: clamp(12px, calc(2 * var(--vmin)), 24px);
+            margin-top: clamp(14px, calc(2.5 * var(--vmin)), 28px) auto;
+            width: 100%;
+            max-width: min(900px, 95%);
+        }
+
+        .impact-card {
+            background: rgba(255, 255, 255, 0.75);
+            color: #222;
+            padding: clamp(10px, 1.calc(6 * var(--vmin)), 18px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .impact-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .impact-card h3 {
+            color: #222;
+            margin-top: 0;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: clamp(12px, calc(2 * var(--vmin)), 28px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #009c64;
+            padding: clamp(8px, calc(1.2 * var(--vmin)), 14px) clamp(14px, calc(2 * var(--vmin)), 26px);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            font-size: clamp(0.85em, 1.calc(4 * var(--vmin)), 1em);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #009c64;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #009c64;
+            color: #fff;
+            border-color: #009c64;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #ccc;
+            color: #666;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: clamp(10px, calc(1.8 * var(--vmin)), 24px);
+            right: clamp(12px, calc(2 * var(--vmin)), 28px);
+            padding: clamp(6px, calc(1 * var(--vmin)), 12px) clamp(10px, calc(1.5 * var(--vmin)), 20px);
+            font-size: clamp(0.8em, calc(1.3 * var(--vmin)), 0.95em);
+            color: #333;
+            font-weight: 500;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .highlight {
+            background: #f0f0f0;
+            padding: clamp(1px, calc(0.2 * var(--vmin)), 4px) clamp(4px, calc(0.6 * var(--vmin)), 8px);
+            border-radius: clamp(3px, calc(0.5 * var(--vmin)), 6px);
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e8e8e8;
+            color: #444;
+            padding: clamp(2px, calc(0.4 * var(--vmin)), 6px) clamp(6px, calc(1 * var(--vmin)), 14px);
+            border-radius: clamp(4px, calc(0.6 * var(--vmin)), 8px);
+            font-size: clamp(0.8em, calc(1.2 * var(--vmin)), 0.9em);
+            margin-left: 0.3em;
+        }
+
+        /* 콘텐츠 슬라이드: 은은한 배경, 가운데 정렬, 상단부터 배치 */
+        .slide-content {
+            background: linear-gradient(160deg, #fafbfc 0%, #f0f4f8 100%);
+            justify-content: flex-start;
+            padding-top: clamp(12px, calc(2 * var(--vmin)), 24px);
+            overflow: hidden;
+        }
+
+        /* ========== 애플 스타일 (1페이지·마지막 페이지 제외) ========== */
+        .presentation-container .slide:not(:first-child):not(:last-child) {
+            background: #fbfbfd;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", "Malgun Gothic", sans-serif;
+            color: #1d1d1f;
+            padding: clamp(10px, calc(1.8 * var(--vmin)), 24px);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) h1,
+        .presentation-container .slide:not(:first-child):not(:last-child) h2 {
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0.25em;
+            font-size: clamp(1.35em, calc(3.2 * var(--vmin)), 2em);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) h3 {
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            font-size: clamp(0.95em, calc(1.55 * var(--vmin)), 1.1em);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) p,
+        .presentation-container .slide:not(:first-child):not(:last-child) li {
+            color: #6e6e73;
+            font-size: clamp(0.85em, 1.calc(4 * var(--vmin)), 0.98em);
+            line-height: 1.5;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .lead-question {
+            color: #6e6e73;
+            font-weight: 400;
+            font-size: clamp(0.9em, 1.calc(4 * var(--vmin)), 1em);
+        }
+
+        /* 카드: 애플 스타일 — 흰색, 부드러운 그림자, 넓은 라운드 */
+        .presentation-container .slide:not(:first-child):not(:last-child) .role-card,
+        .presentation-container .slide:not(:first-child):not(:last-child) .problem-list,
+        .presentation-container .slide:not(:first-child):not(:last-child) .solution-list,
+        .presentation-container .slide:not(:first-child):not(:last-child) .card-blur,
+        .presentation-container .slide:not(:first-child):not(:last-child) .feature-box,
+        .presentation-container .slide:not(:first-child):not(:last-child) .scenario-step,
+        .presentation-container .slide:not(:first-child):not(:last-child) .impact-card,
+        .presentation-container .slide:not(:first-child):not(:last-child) .key-feature-card,
+        .presentation-container .slide:not(:first-child):not(:last-child) .job-fit-chart-card,
+        .presentation-container .slide:not(:first-child):not(:last-child) .notion-mock {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border: none;
+            border-left: none;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .role-card {
+            border-left: none;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .problem-list {
+            border-left: none;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .solution-list {
+            border-left: none;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .role-card:hover,
+        .presentation-container .slide:not(:first-child):not(:last-child) .scenario-step:hover,
+        .presentation-container .slide:not(:first-child):not(:last-child) .impact-card:hover,
+        .presentation-container .slide:not(:first-child):not(:last-child) .key-feature-card:hover,
+        .presentation-container .slide:not(:first-child):not(:last-child) .job-fit-chart-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .role-card strong {
+            color: #1d1d1f;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .list-icon-check {
+            color: #34c759;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .highlight {
+            background: rgba(0, 113, 227, 0.08);
+            color: #0071e3;
+            padding: 0.15em 0.45em;
+            border-radius: 6px;
+        }
+
+        /* 아키텍처 슬라이드 (중간 페이지) 애플 스타일 */
+        .presentation-container .slide.slide-architecture:not(:first-child):not(:last-child) {
+            background: #fbfbfd;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .architecture-diagram {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+            border: none;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .architecture-cards .feature-box {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+            border: none;
+        }
+
+        /* 시나리오 타임라인 라인 색상 */
+        .presentation-container .slide:not(:first-child):not(:last-child) .scenario-timeline:before {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .scenario-step:before {
+            background: #34c759;
+            border-color: #fff;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+
+        /* 바 차트·링 — 애플 톤 */
+        .presentation-container .slide:not(:first-child):not(:last-child) .bar-chart-track {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .bar-chart-fill {
+            background: linear-gradient(90deg, #34c759, #30d158);
+            border-radius: 10px;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .readiness-ring .ring-fill {
+            stroke: #34c759;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .readiness-ring-value {
+            color: #34c759;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .notion-mock-block h4 {
+            color: #0071e3;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) .notion-mock-toggle {
+            border-left-color: #34c759;
+        }
+
+        /* 네비게이션·카운터는 그대로 두고, 슬라이드 카운터만 중간 슬라이드에서 톤 맞춤 */
+        .presentation-container .slide:not(:first-child):not(:last-child) .slide-title-with-icon .title-icon {
+            opacity: 0.85;
+        }
+
+        .presentation-container .slide:not(:first-child):not(:last-child) li:before {
+            color: #6e6e73;
+            font-weight: 500;
+        }
+
+        /* 중간 슬라이드 전용 배경 (slide-content 그라데이션 대체) */
+        .presentation-container .slide.slide-content:not(:first-child):not(:last-child) {
+            background: #fbfbfd;
+        }
+
+        /* '직접 시연' 등 중간 타이틀 슬라이드 — 애플 톤 유지 */
+        .presentation-container .slide.title-slide:not(:first-child):not(:last-child) .title-slide-inner h1 {
+            color: #1d1d1f;
+            font-size: clamp(1.6em, calc(4.2 * var(--vmin)), 2.8em);
+            letter-spacing: -0.025em;
+        }
+
+        .presentation-container .slide.title-slide:not(:first-child):not(:last-child) .subtitle {
+            color: #6e6e73;
+        }
+
+        /* 시연 슬라이드 — 맥 스타일 동영상 창 연출 */
+        .slide-demo .title-slide-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(16px, calc(3 * var(--vmin)), 28px);
+        }
+
+        .slide-demo .demo-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.35em;
+        }
+
+        .slide-demo .demo-title-row .demo-icon {
+            width: clamp(32px, calc(4.5 * var(--vmin)), 48px);
+            height: clamp(32px, calc(4.5 * var(--vmin)), 48px);
+            color: #1d1d1f;
+            flex-shrink: 0;
+        }
+
+        .slide-demo .mac-window {
+            width: min(94%, 72vw);
+            max-width: 900px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            background: #fff;
+            margin-top: 0.5em;
+        }
+
+        .slide-demo .mac-title-bar {
+            height: 38px;
+            background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
+            border-bottom: 1px solid #b0b0b0;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+        }
+
+        .slide-demo .mac-traffic {
+            display: flex;
+            gap: 6px;
+        }
+
+        .slide-demo .mac-traffic span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .slide-demo .mac-traffic .red {
+            background: #ff5f57;
+        }
+
+        .slide-demo .mac-traffic .yellow {
+            background: #febc2e;
+        }
+
+        .slide-demo .mac-traffic .green {
+            background: #28c840;
+        }
+
+        .slide-demo .mac-window-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .slide-demo .mac-video-area {
+            aspect-ratio: 16/9;
+            background: linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide-demo .mac-video-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.3) 100%);
+            pointer-events: none;
+        }
+
+        .slide-demo .play-icon-wrap {
+            width: clamp(56px, calc(10 * var(--vmin)), 80px);
+            height: clamp(56px, calc(10 * var(--vmin)), 80px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            color: #1d1d1f;
+            z-index: 1;
+        }
+
+        .slide-demo .play-icon-wrap svg {
+            width: 42%;
+            height: 42%;
+            margin-left: 4%;
+        }
+
+        .slide-demo .demo-subtitle {
+            margin-top: 0;
+            font-size: clamp(0.9em, 1.calc(4 * var(--vmin)), 1.05em);
+            color: #6e6e73;
+        }
+
+        /* 핵심 기능 통합 슬라이드 */
+        .key-features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(12px, calc(2 * var(--vmin)), 24px);
+            margin-top: clamp(12px, calc(2 * var(--vmin)), 24px) auto;
+            width: 100%;
+            max-width: min(880px, 95%);
+        }
+
+        .key-feature-card {
+            background: rgba(255, 255, 255, 0.75);
+            padding: clamp(12px, calc(2 * var(--vmin)), 24px);
+            border-radius: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .key-feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .key-feature-card h3 {
+            margin: 0.4em 0 0.25em;
+            font-size: clamp(0.9em, 1.calc(4 * var(--vmin)), 1.05em);
+        }
+
+        .key-feature-card p {
+            font-size: clamp(0.8em, calc(1.15 * var(--vmin)), 0.9em);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .key-feature-icon {
+            width: clamp(36px, 5.calc(5 * var(--vmin)), 64px);
+            height: clamp(36px, 5.calc(5 * var(--vmin)), 64px);
+            margin: 0 auto;
+        }
+
+        .key-feature-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .key-features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 준비도 점수 링 차트 (SVG stroke-dashoffset) */
+        .readiness-ring-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(14px, calc(2.2 * var(--vmin)), 28px);
+            flex-wrap: wrap;
+            margin: clamp(12px, calc(2 * var(--vmin)), 24px) 0;
+        }
+
+        .readiness-ring {
+            position: relative;
+            width: clamp(72px, calc(12 * var(--vmin)), 140px);
+            height: clamp(72px, calc(12 * var(--vmin)), 140px);
+        }
+
+        .readiness-ring svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .readiness-ring .ring-bg {
+            fill: none;
+            stroke: rgba(0, 156, 100, 0.15);
+            stroke-width: 10;
+        }
+
+        .readiness-ring .ring-fill {
+            fill: none;
+            stroke: #009c64;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            animation: ringFill 1.2s ease-out forwards;
+        }
+
+        @keyframes ringFill {
+            to {
+                stroke-dashoffset: var(--ring-offset, 70);
+            }
+        }
+
+        .readiness-ring-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(1.1em, calc(1.8 * var(--vmin)), 1.5rem);
+            font-weight: 700;
+            color: #009c64;
+        }
+
+        /* 맞춤형 직무 추천: 차트/그래프 영역 */
+        .job-fit-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(10px, calc(1.5 * var(--vmin)), 18px);
+            margin-top: clamp(8px, calc(1.5 * var(--vmin)), 16px) auto;
+            width: 100%;
+            max-width: min(760px, 95%);
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .job-fit-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .job-fit-chart-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: clamp(12px, calc(2 * var(--vmin)), 24px) clamp(14px, calc(2.2 * var(--vmin)), 28px);
+            border-radius: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .job-fit-chart-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .bar-chart-row {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            margin-bottom: clamp(8px, calc(1.2 * var(--vmin)), 16px);
+        }
+
+        .bar-chart-row span:first-child {
+            width: clamp(52px, calc(8 * var(--vmin)), 84px);
+            font-size: clamp(0.8em, calc(1.2 * var(--vmin)), 0.95em);
+            color: #444;
+        }
+
+        .bar-chart-track {
+            flex: 1;
+            height: clamp(14px, calc(2.2 * var(--vmin)), 24px);
+            background: rgba(0, 156, 100, 0.12);
+            border-radius: clamp(6px, calc(1 * var(--vmin)), 12px);
+            overflow: hidden;
+        }
+
+        .bar-chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #009c64, #00b377);
+            border-radius: 10px;
+            width: 0;
+            animation: barGrow 0.8s ease-out forwards;
+        }
+
+        .bar-chart-row:nth-child(1) .bar-chart-fill {
+            animation-delay: 0.1s;
+            --w: 85%;
+        }
+
+        .bar-chart-row:nth-child(2) .bar-chart-fill {
+            animation-delay: 0.2s;
+            --w: 72%;
+        }
+
+        .bar-chart-row:nth-child(3) .bar-chart-fill {
+            animation-delay: 0.3s;
+            --w: 90%;
+        }
+
+        .bar-chart-row:nth-child(4) .bar-chart-fill {
+            animation-delay: 0.4s;
+            --w: 68%;
+        }
+
+        @keyframes barGrow {
+            to {
+                width: var(--w, 75%);
+            }
+        }
+
+        /* 타임라인 화살표 (데이터 흐름) */
+        .timeline-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 0;
+            color: #009c64;
+        }
+
+        .timeline-arrow svg {
+            animation: arrowAnim 1.8s ease-in-out infinite;
+        }
+
+        /* 노션 스타일 리포트 목업 */
+        .notion-mock {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: clamp(8px, calc(1.2 * var(--vmin)), 14px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            max-width: min(680px, 92%);
+            margin: clamp(12px, calc(2 * var(--vmin)), 24px) auto;
+            text-align: left;
+        }
+
+        .notion-mock-header {
+            padding: clamp(14px, calc(2.2 * var(--vmin)), 28px) clamp(16px, calc(2.5 * var(--vmin)), 32px) clamp(10px, calc(1.5 * var(--vmin)), 18px);
+            border-bottom: 1px solid #eee;
+        }
+
+        .notion-mock-title {
+            font-size: clamp(1.3em, calc(2.2 * var(--vmin)), 1.6em);
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 0.25em;
+        }
+
+        .notion-mock-meta {
+            font-size: clamp(0.8em, calc(1.2 * var(--vmin)), 0.9em);
+            color: #666;
+        }
+
+        .notion-mock-body {
+            padding: clamp(12px, calc(2 * var(--vmin)), 24px) clamp(16px, calc(2.5 * var(--vmin)), 32px) clamp(16px, calc(2.5 * var(--vmin)), 32px);
+        }
+
+        .notion-mock-block {
+            margin-bottom: clamp(10px, calc(1.5 * var(--vmin)), 18px);
+            font-size: clamp(0.88em, calc(1.35 * var(--vmin)), 0.98em);
+            line-height: 1.7;
+            color: #333;
+        }
+
+        .notion-mock-block h4 {
+            font-size: clamp(0.95em, 1.calc(4 * var(--vmin)), 1.05em);
+            color: #009c64;
+            margin: 0.35em 0 0.2em;
+        }
+
+        .notion-mock-toggle {
+            background: #f7f7f7;
+            border-radius: clamp(4px, calc(0.7 * var(--vmin)), 8px);
+            padding: clamp(6px, calc(1 * var(--vmin)), 12px) clamp(10px, calc(1.5 * var(--vmin)), 16px);
+            margin: 0.25em 0;
+            border-left: 3px solid #009c64;
+        }
+
+        /* 슬라이드 15: AI 추천 대시보드 — 화면 꽉 차게 */
+        .slide.slide-ai-recommend {
+            justify-content: flex-start;
+            text-align: left;
+            padding: clamp(6px, calc(1.2 * var(--vmin)), 14px);
+            overflow: auto;
+        }
+
+        .slide-ai-recommend .ai-recommend-inner {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .slide-ai-recommend .ai-recommend-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            padding-bottom: clamp(6px, calc(1 * var(--vmin)), 12px);
+            border-bottom: 1px solid #e5e5e7;
+            margin-bottom: clamp(6px, calc(1 * var(--vmin)), 12px);
+        }
+
+        .slide-ai-recommend .ai-recommend-title {
+            font-size: clamp(1.4em, calc(3.2 * var(--vmin)), 2em);
+            font-weight: 700;
+            color: #1d1d1f;
+            margin: 0;
+            border: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .slide-ai-recommend .ai-recommend-export {
+            font-size: clamp(0.7em, calc(1.2 * var(--vmin)), 0.85em);
+            padding: clamp(4px, calc(0.8 * var(--vmin)), 8px) clamp(8px, calc(1.4 * var(--vmin)), 12px);
+            background: #f5f5f7;
+            border: 1px solid #d4d4d4;
+            border-radius: 6px;
+            color: #1d1d1f;
+            cursor: pointer;
+        }
+
+        .slide-ai-recommend .ai-recommend-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+            gap: clamp(6px, calc(1 * var(--vmin)), 12px);
+            flex: 1;
+            min-height: 0;
+            align-content: start;
+        }
+
+        .slide-ai-recommend .ai-recommend-card {
+            background: #fff;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            padding: clamp(6px, calc(1.2 * var(--vmin)), 12px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .slide-ai-recommend .ai-recommend-card-title {
+            font-size: clamp(0.85em, calc(1.5 * var(--vmin)), 1em);
+            color: #1d1d1f;
+            margin: 0 0 0.25em 0;
+            font-weight: 600;
+        }
+
+        .slide-ai-recommend .ai-recommend-sub {
+            font-size: clamp(0.7em, calc(1.1 * var(--vmin)), 0.8em);
+            color: #666;
+            margin: 0.35em 0 0.15em 0;
+        }
+
+        .slide-ai-recommend .ai-recommend-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 0.25em;
+        }
+
+        .slide-ai-recommend .ai-recommend-tags span {
+            background: #e8e8ed;
+            color: #1d1d1f;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: clamp(0.68em, calc(1.05 * var(--vmin)), 0.78em);
+        }
+
+        .slide-ai-recommend .ai-recommend-card ul,
+        .slide-ai-recommend .ai-recommend-card ol {
+            margin: 0.2em 0 0 0;
+            padding-left: 1.2em;
+            font-size: clamp(0.72em, calc(1.1 * var(--vmin)), 0.82em);
+        }
+
+        .slide-ai-recommend .ai-recommend-salary {
+            font-size: clamp(0.8em, calc(1.2 * var(--vmin)), 0.9em);
+            font-weight: 500;
+            margin: 0.2em 0 0 0;
+        }
+
+        .slide-ai-recommend .ai-recommend-questions {
+            list-style: decimal;
+        }
+
+        /* 12페이지: Top-K + AI 추천 표 — 9페이지처럼 화면 꽉 차게 */
+        .slide.slide-case-fill {
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .slide-case-fill .case-fill-row {
+            display: flex;
+            gap: clamp(10px, calc(1.8 * var(--vmin)), 20px);
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .slide-case-fill .case-fill-left {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-case-fill .case-fill-left .case-image-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide-case-fill .case-fill-left .case-image-wrap img {
+            max-height: 100%;
+            width: auto;
+            max-width: 100%;
+        }
+
+        .slide-case-fill .case-fill-right {
+            flex: 0 0 min(48%, 420px);
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-case-fill .data-extract-in-case {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .slide-case-fill .data-extract-in-case .excel-table-wrap {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .slide-case .data-extract-section.data-extract-in-case {
+            width: 100%;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #d4d4d4;
+            overflow: hidden;
+        }
+
+        .slide-case .data-extract-in-case .data-extract-caption {
+            padding: clamp(6px, calc(1 * var(--vmin)), 10px) clamp(10px, calc(1.5 * var(--vmin)), 16px);
+            background: linear-gradient(180deg, #f5f5f7 0%, #ebebed 100%);
+            border-bottom: 1px solid #e5e5e7;
+            font-size: clamp(0.72em, calc(1.15 * var(--vmin)), 0.88em);
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+
+        .slide-case .data-extract-in-case .caption-sub {
+            display: block;
+            font-weight: 400;
+            color: #86868b;
+            font-size: 0.92em;
+            margin-top: 2px;
+        }
+
+        .slide-case .data-extract-in-case .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.6em, calc(1 * var(--vmin)), 0.78em);
+            table-layout: fixed;
+        }
+
+        .slide-case .data-extract-in-case .excel-table th.excel-col-row,
+        .slide-case .data-extract-in-case .excel-table td.excel-col-row {
+            width: 2em;
+            min-width: 2em;
+            background: #f2f2f2;
+            color: #5f5f5f;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #d4d4d4;
+            padding: 4px;
+        }
+
+        .slide-case .data-extract-in-case .excel-table th {
+            background: #f2f2f2;
+            color: #000;
+            font-weight: 600;
+            text-align: left;
+            padding: 4px 6px;
+            border: 1px solid #d4d4d4;
+        }
+
+        .slide-case .data-extract-in-case .excel-table td {
+            padding: 4px 6px;
+            border: 1px solid #d4d4d4;
+            color: #000;
+            background: #fff;
+        }
+
+        .slide-case .data-extract-in-case .excel-table tbody tr:nth-child(even) td:not(.excel-col-row) {
+            background: #f9fafb;
+        }
+
+        .slide-case .data-extract-in-case .data-extract-lead {
+            text-align: center;
+            font-size: clamp(0.72em, calc(1.1 * var(--vmin)), 0.85em);
+            color: #86868b;
+            margin-top: 6px;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+
+<body tabindex="-1">
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">10</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- 슬라이드 1: Title (중요 슬라이드: 초록 배경) -->
+        <div class="slide active title-slide slide-important">
+            <div class="slide-logo-header">
+                <img src="src/f_logo.png" alt="로고" />
+            </div>
+            <div class="title-slide-inner">
+                <h1>AI Counsel Assistant</h1>
+                <p class="subtitle">"상담사는 내담자에게만 집중하세요, 기록과 분석은 AI가 서포트합니다."</p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 2: 목차 -->
+        <div class="slide slide-content slide-toc">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📑</span> 목차</h2>
+            <ul class="toc-list">
+                <li><span class="toc-num">1</span>역할 안내</li>
+                <li><span class="toc-num">2</span>이런 고민, 있으신가요?</li>
+                <li><span class="toc-num">3</span>그렇다면, 해결책은?</li>
+                <li><span class="toc-num">4</span>핵심 기능</li>
+                <li><span class="toc-num">5</span>직무 적합도 시각화</li>
+                <li><span class="toc-num">6</span>사용자 플로우</li>
+                <li><span class="toc-num">7</span>시스템 아키텍처</li>
+                <li><span class="toc-num">8</span>유사 사례 검색 기반 AI 상담 지원 시스템 사례</li>
+                <li><span class="toc-num">9</span>실제 결과물 / 데모 시연</li>
+                <li><span class="toc-num">10</span>도입 효과 · Q&A</li>
+            </ul>
+        </div>
+
+        <!-- 슬라이드 3: 역할 안내 (권재현 팀장을 상담 총괄로 1번 배치) -->
+        <div class="slide slide-content">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">👥</span> 역할 안내</h2>
+            <div class="role-list notion-style">
+                <div class="role-item">
+                    <div class="role-avatar role-avatar-1" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20a8 8 0 0 1 16 0" />
+                            <path d="m9 14 1.5 1.5L12 13l1.5 2.5L15 14" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <strong class="role-name">권재현 <span class="role-badge">팀장</span></strong>
+                        <p class="role-desc">상담 프로세스 총괄 / 전체 데이터·코드 연결 / 프론트</p>
+                    </div>
+                </div>
+                <div class="role-item">
+                    <div class="role-avatar role-avatar-2" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <strong class="role-name">조용민</strong>
+                        <p class="role-desc">LLM 기반 비정형 데이터 정형화 자동화 알고리즘 구축</p>
+                    </div>
+                </div>
+                <div class="role-item">
+                    <div class="role-avatar role-avatar-3" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20V10" />
+                            <path d="M18 20V4" />
+                            <path d="M6 20v-4" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <strong class="role-name">정세연</strong>
+                        <p class="role-desc">임베딩 기반 Top-K 추천 시스템 설계 및 Python AI 파이프라인 구현</p>
+                    </div>
+                </div>
+                <div class="role-item">
+                    <div class="role-avatar role-avatar-4" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <strong class="role-name">이서현</strong>
+                        <p class="role-desc">프론트 / 내담자 식별 로직 설계 및 AI 통신 보안 프로세스 구축</p>
+                    </div>
+                </div>
+                <div class="role-item">
+                    <div class="role-avatar role-avatar-5" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3" />
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                            <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <strong class="role-name">이형주</strong>
+                        <p class="role-desc">데이터베이스 설계, 구축, 초기 임베딩 데이터 생성</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 3: 문제 정의 (공감대 형성) -->
+        <div class="slide slide-content">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">❓</span> 이런 고민, 있으신가요?</h2>
+            <p class="lead-question">상담 기록과 데이터를 어떻게 하면 제대로 활용할 수 있을까요? — 먼저 현장의 목소리에 공감합니다.</p>
+            <div class="problem-list card-blur">
+                <h3><span class="list-icon">⚠️</span> 상담 데이터가 제각각이라 활용이 어렵다</h3>
+                <p>"상담사 10명이면 10가지 결과물" — 기록 방식이 달라 소중한 상담 기록이 단순 텍스트 뭉치로만 남고, 데이터로 쌓이지 않는 현실</p>
+            </div>
+            <div class="problem-list card-blur">
+                <h3><span class="list-icon">⚠️</span> 상담사에 따라 내담자 결과가 달라진다</h3>
+                <p>숙련 상담사와 신입의 노하우 차이로, 같은 내담자도 만나는 사람에 따라 정보의 질과 성공률이 달라지는 불균형</p>
+            </div>
+            <div class="problem-list card-blur">
+                <h3><span class="list-icon">⚠️</span> 서류·검토에 상담보다 시간이 더 든다</h3>
+                <p>상담 시간보다 긴 서류 작성과 사업 연계 검토 — 상담 본업에 집중하기 어려운 구조</p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 4: 솔루션 (해결책 구체화) -->
+        <div class="slide slide-content">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">💡</span> 그렇다면, 해결책은?</h2>
+            <p class="lead-question">데이터를 자산으로 바꾸고, 상담 품질을 한 단계 올리는 방법 — 우리의 강점을 구체적으로 제시합니다.</p>
+            <div class="solution-list card-blur">
+                <h3><span class="list-icon list-icon-check">✓</span> 데이터의 자산화</h3>
+                <p>자유 형식의 상담 일지를 AI가 실시간 분석해 <span class="highlight">정형 데이터</span>로 변환합니다. 쌓여만 있던 기록을 검색·분석 가능한 자산으로
+                    전환합니다.</p>
+            </div>
+            <div class="solution-list card-blur">
+                <h3><span class="list-icon list-icon-check">✓</span> 지식의 평준화</h3>
+                <p>신입 상담사도 유사 사례 기반 가이드를 바로 활용할 수 있도록, 베테랑의 노하우를 표준화된 형태로 제공합니다.</p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 5: 핵심 기능 (통합) -->
+        <div class="slide slide-key-features slide-content">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">⚙️</span> 어떻게 가능하게 할까요?</h2>
+            <p class="lead-question">세 가지 핵심 기능으로 ‘기록 → 분석 → 추천’을 한 번에</p>
+            <div class="key-features-grid">
+                <div class="key-feature-card card-blur">
+                    <div class="key-feature-icon">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="12" width="32" height="24" rx="4" stroke="#2c5282" stroke-width="2"
+                                fill="#e6f2ff" />
+                            <path d="M16 22h16M16 28h12" stroke="#2c5282" stroke-width="1.5" stroke-linecap="round" />
+                            <circle cx="24" cy="34" r="2" fill="#2c5282" />
+                        </svg>
+                    </div>
+                    <h3>안전하고 스마트한 식별</h3>
+                    <p>이름·전화번호만으로 과거 이력과 유사 사례를 안전하게 매칭합니다.</p>
+                </div>
+                <div class="key-feature-card card-blur">
+                    <div class="key-feature-icon">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="20" r="10" stroke="#009c64" stroke-width="2" fill="#e6f7f0" />
+                            <path d="M14 38c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#009c64" stroke-width="1.5"
+                                stroke-linecap="round" />
+                            <path d="M24 14v4l3 3" stroke="#009c64" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>AI 기반 상담 네비게이션</h3>
+                    <p>나이·성별·학력·역량을 종합 분석해 최적의 직무·시나리오를 자동 추천합니다.</p>
+                </div>
+                <div class="key-feature-card card-blur">
+                    <div class="key-feature-icon">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="8" width="28" height="32" rx="2" stroke="#555" stroke-width="1.5"
+                                fill="#f5f5f5" />
+                            <path d="M16 18h16M16 24h12M16 30h8" stroke="#666" stroke-width="1"
+                                stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3>상담 내역 정형화</h3>
+                    <p>자유 형식 일지를 AI가 실시간 분석해 정형 데이터로 변환하고, 자동 요약·DB 저장·직무 추천까지 연계합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 7: 유저 시나리오 플로우 (상담사 하루 흐름) — AI 추천 표 포함 -->
+        <div class="slide slide-content slide-user-flow">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📋</span> 실제로는 어떻게 쓰이나요?</h2>
+
+            <p class="lead-question">상담사의 하루 — 데이터 흐름을 따라가 보세요</p>
+            <div class="user-flow-row">
+                <div class="user-flow-step">
+                    <div class="user-flow-step-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="6" width="24" height="32" rx="2" stroke="#009c64" stroke-width="2"
+                                fill="rgba(0,156,100,0.08)" />
+                            <path d="M16 14h16M16 20h12M16 26h10" stroke="#009c64" stroke-width="1.5"
+                                stroke-linecap="round" />
+                            <circle cx="34" cy="34" r="8" fill="#009c64" opacity="0.2" />
+                            <path d="M38 38l6 6" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <span class="user-flow-step-num">1</span>
+                    <h3>상담 전 조회</h3>
+                    <p>자료 업로드 → AI 자동 요약·DB 저장 → 과거 이력·유사 사례 확인</p>
+                </div>
+                <div class="user-flow-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="user-flow-step">
+                    <div class="user-flow-step-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 14h24v20H12l-6 6V14z" stroke="#009c64" stroke-width="2"
+                                fill="rgba(0,156,100,0.08)" stroke-linejoin="round" />
+                            <path d="M18 22h12M18 26h8" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <span class="user-flow-step-num">2</span>
+                    <h3>상담 중</h3>
+                    <p>csv/word/pdf 기록 시 AI 실시간 가이드 → 놓치기 쉬운 항목 채우기</p>
+                </div>
+                <div class="user-flow-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="user-flow-step">
+                    <div class="user-flow-step-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 8v24M8 24h32" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
+                            <rect x="14" y="14" width="20" height="20" rx="2" stroke="#009c64" stroke-width="2"
+                                fill="rgba(0,156,100,0.08)" />
+                            <path d="M24 20v8M20 24h8" stroke="#009c64" stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M10 32l4-4 4 4 6-6 4 4" stroke="#009c64" stroke-width="1.2" stroke-linecap="round"
+                                stroke-linejoin="round" opacity="0.8" />
+                        </svg>
+                    </div>
+                    <span class="user-flow-step-num">3</span>
+                    <h3>상담 후 업로드</h3>
+                    <p>작성 자료 업로드 → AI 자동 요약·DB 업데이트</p>
+                </div>
+                <div class="user-flow-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="user-flow-step">
+                    <div class="user-flow-step-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="18" stroke="#009c64" stroke-width="2"
+                                fill="rgba(0,156,100,0.08)" />
+                            <path d="M16 24l6 6 12-12" stroke="#009c64" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <span class="user-flow-step-num">4</span>
+                    <h3>검수 및 마감</h3>
+                    <p>생성 데이터 확인 → 원클릭 수정·마감</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 8: 시스템 아키텍처 (SVG 다이어그램) -->
+        <div class="slide slide-architecture">
+            <div class="architecture-slide-header">
+                <h2>시스템 아키텍처</h2>
+                <p style="font-size: 1.15em; color: #555; text-align: center;">
+                    데이터 기반의 신뢰 — 검증된 기술 스택으로 안정성을 보장합니다
+                </p>
+            </div>
+            <div class="architecture-slide-body">
+                <div class="architecture-diagram">
+                    <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="시스템 아키텍처 다이어그램"
+                        preserveAspectRatio="xMidYMid meet">
+                        <!-- OpenAI (외부) -->
+                        <rect class="arch-box" x="180" y="8" width="160" height="44" rx="8" ry="8" />
+                        <text class="arch-text" x="260" y="36" text-anchor="middle">openAI</text>
+
+                        <!-- Server PC (메인 영역) -->
+                        <rect class="arch-box-server" x="20" y="68" width="480" height="260" rx="12" ry="12" />
+                        <text class="arch-text" x="260" y="92" text-anchor="middle">Server PC</text>
+
+                        <!-- Front (왼쪽) -->
+                        <rect class="arch-box" x="40" y="108" width="100" height="200" rx="6" ry="6" />
+                        <text class="arch-text arch-text-small" x="90" y="218" text-anchor="middle">Front</text>
+
+                        <!-- Docker (좌측 상단) - Python Server 포함 -->
+                        <rect class="arch-box-docker" x="168" y="108" width="160" height="100" rx="8" ry="8" />
+                        <text class="arch-text arch-text-small" x="248" y="128" text-anchor="middle">Docker</text>
+                        <rect class="arch-box" x="188" y="138" width="120" height="56" rx="6" ry="6" />
+                        <text class="arch-text arch-text-small" x="248" y="172" text-anchor="middle">Python
+                            Server</text>
+
+                        <!-- Spring Server -->
+                        <rect class="arch-box" x="168" y="220" width="160" height="48" rx="6" ry="6" />
+                        <text class="arch-text arch-text-small" x="248" y="250" text-anchor="middle">Spring
+                            Server</text>
+
+                        <!-- Docker (우측) - DB 포함 -->
+                        <rect class="arch-box-docker" x="360" y="108" width="120" height="200" rx="8" ry="8" />
+                        <text class="arch-text arch-text-small" x="420" y="128" text-anchor="middle">Docker</text>
+                        <rect class="arch-box" x="380" y="148" width="80" height="56" rx="6" ry="6" />
+                        <text class="arch-text arch-text-small" x="420" y="182" text-anchor="middle">DB</text>
+                    </svg>
+                </div>
+                <div class="architecture-cards">
+                    <div class="feature-box">
+                        <h3>핵심 기술</h3>
+                        <p><strong>PostgreSQL(pgvector)</strong>을 활용하여 텍스트 데이터의 의미적 유사도를 초고속으로 검색하여 유사 사례를 매칭 · Spring
+                            Boot와 Python(FastAPI)이 Docker 환경에서 협업</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>보안</h3>
+                        <p>Spring Server가 개인정보를 식별화(clientId)하여 AI 서버(openAI)로 전달함으로써 보안 통신 규격 준수</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 9: 백엔드 시스템 아키텍처 (Spring Boot) -->
+        <div class="slide slide-architecture slide-backend-arch">
+            <div class="architecture-slide-header">
+                <h2>백엔드 시스템 아키텍처</h2>
+                <p style="font-size: 1.05em; color: #555;">Spring Boot 기반 3계층 아키텍처 · REST API · JPA ·
+                    PostgreSQL(pgvector) · Spring AI</p>
+            </div>
+            <div class="architecture-slide-body">
+                <div class="architecture-diagram">
+                    <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="백엔드 시스템 아키텍처"
+                        preserveAspectRatio="xMidYMid meet">
+                        <!-- HTTP REST API -->
+                        <rect class="arch-layer-api" x="20" y="8" width="600" height="36" rx="6" ry="6" />
+                        <text class="arch-text" x="320" y="31" text-anchor="middle" fill="#fff">HTTP REST API</text>
+
+                        <!-- Controller Layer -->
+                        <text class="arch-group-label" x="20" y="58" text-anchor="start">Controller Layer</text>
+                        <rect class="arch-layer-controller" x="20" y="62" width="135" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="87" y="82" text-anchor="middle">ClientController</text>
+                        <rect class="arch-layer-controller" x="165" y="62" width="145" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="237" y="82" text-anchor="middle">ConsultationController</text>
+                        <rect class="arch-layer-controller" x="320" y="62" width="120" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="380" y="82" text-anchor="middle">DataController</text>
+                        <rect class="arch-layer-controller" x="450" y="62" width="170" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="535" y="82" text-anchor="middle">GlobalExceptionHandler</text>
+
+                        <!-- Service Layer -->
+                        <text class="arch-group-label" x="20" y="112" text-anchor="start">Service Layer</text>
+                        <rect class="arch-layer-service" x="20" y="116" width="120" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="80" y="136" text-anchor="middle">ClientService</text>
+                        <rect class="arch-layer-service" x="150" y="116" width="145" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="222" y="136" text-anchor="middle">ConsultationService</text>
+                        <rect class="arch-layer-service" x="305" y="116" width="110" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="360" y="136" text-anchor="middle">DataService</text>
+                        <rect class="arch-layer-service" x="425" y="116" width="130" height="32" rx="5" ry="5" />
+                        <text class="arch-text-small" x="490" y="136" text-anchor="middle">AiSummaryService</text>
+
+                        <!-- 하위 컴포넌트: Repository / Utility / Spring AI -->
+                        <line x1="20" y1="158" x2="620" y2="158" stroke="#e2e8f0" stroke-width="1"
+                            stroke-dasharray="4" />
+                        <rect class="arch-layer-repo" x="20" y="168" width="175" height="118" rx="6" ry="6" />
+                        <text class="arch-group-label" x="30" y="188">Repository (JPA)</text>
+                        <text class="arch-text-small" x="107" y="212" text-anchor="middle">ClientRepo</text>
+                        <text class="arch-text-small" x="107" y="232" text-anchor="middle">ConsultationRepo</text>
+                        <text class="arch-text-small" x="107" y="252" text-anchor="middle">TrainingRepo</text>
+                        <text class="arch-text-small" x="107" y="272" text-anchor="middle">EmploymentRepo</text>
+
+                        <rect class="arch-layer-utility" x="210" y="168" width="200" height="118" rx="6" ry="6" />
+                        <text class="arch-group-label" x="220" y="188">Utility</text>
+                        <text class="arch-text-small" x="310" y="228" text-anchor="middle">EmbeddingService</text>
+                        <text class="arch-text-small" x="310" y="252" text-anchor="middle">ContextBuilder</text>
+
+                        <rect class="arch-layer-external" x="425" y="168" width="195" height="118" rx="6" ry="6" />
+                        <text class="arch-group-label" x="435" y="188">Spring AI / External</text>
+                        <text class="arch-text-small" x="522" y="212" text-anchor="middle">ChatClient</text>
+                        <text class="arch-text-small" x="522" y="232" text-anchor="middle">OpenAI</text>
+                        <text class="arch-text-small" x="522" y="252" text-anchor="middle">pgvector</text>
+                        <text class="arch-text-small" x="522" y="272" text-anchor="middle">Apache Tika</text>
+
+                        <!-- PostgreSQL -->
+                        <rect class="arch-layer-db" x="20" y="298" width="600" height="50" rx="6" ry="6" />
+                        <text class="arch-text" x="320" y="322" text-anchor="middle">PostgreSQL</text>
+                        <text class="arch-text-small" x="320" y="338" text-anchor="middle">JPA · pgvector ·
+                            JdbcTemplate</text>
+                    </svg>
+                </div>
+                <div class="architecture-cards">
+                    <div class="feature-box">
+                        <h3>데이터 흐름</h3>
+                        <p>요청 → Controller → Service → Repository/Utility/AI 연동 → PostgreSQL. Spring Boot가 비즈니스 로직·보안을
+                            관리하고, pgvector로 유사도 검색을 수행합니다.</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>기술 스택</h3>
+                        <p><strong>Spring Boot</strong>, REST API, <strong>JPA</strong>,
+                            <strong>PostgreSQL(pgvector)</strong>, Spring AI(ChatClient, Embedding),
+                            <strong>OpenAI</strong>, Apache Tika
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 시스템 아키텍처 - AI 서비스 추천 API 아키텍처 (10페이지) -->
+        <div class="slide slide-content slide-case">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🏗</span> 4. 시스템 아키텍처 · AI 서비스
+                추천 API</h2>
+            <p class="case-msg-box"><strong>핵심 메시지</strong>: "빠르고, 안전하며, 확장이 용이한 최신 기술의 집약체."</p>
+            <div class="case-image-wrap">
+                <img src="src/AI_아키텍처.png" alt="ai-service 추천 API 아키텍처" />
+            </div>
+            <p class="case-msg-box"><strong>설명</strong>: <strong>Java Backend</strong>가 추천 API를 호출하면,
+                <strong>PostgreSQL(pgvector)</strong>에서 클라이언트 프로필·임베딩·유사 사례를 조회하고, <strong>OpenAI</strong>로 임베딩·GPT 추천을
+                수행합니다. PII 마스킹 후 규칙 기반 + LLM 추천을 병합해 최종 응답을 반환합니다.
+            </p>
+            <p class="case-msg-box"><strong>세일즈 포인트</strong>: <strong>pgvector</strong>로 유사 사례를 초고속 검색하고, GPT와 규칙 기반을
+                결합해 빈 결과 시에도 <strong>안정적인 추천</strong>이 가능합니다.</p>
+        </div>
+
+        <!-- ========== 유사 사례 검색 기반 AI 상담 지원 시스템 사례 ========== -->
+        <!-- 슬라이드: 사례 인트로 + Top K 추출 개요 -->
+        <div class="slide slide-content slide-case">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🔍</span> 유사 사례 검색 기반 AI 상담 지원
+                시스템 사례</h2>
+            <p class="lead-question">Top K(유사사례) 추출 결과</p>
+            <p style="margin: 0.5em 0; font-size: 0.95em;">실제 취업 이력이 있는 케이스만 추출해서 내담자의 취업을 위한 유의미한 정보를 제공하고자 함</p>
+            <div class="case-image-wrap">
+                <img src="src/유사 사례 검색 기반 AI 상담 지원 시스템 사례.png" alt="유사 사례 검색 기반 AI 상담 지원 시스템 사례" />
+            </div>
+            <div class="case-image-row">
+                <img src="src/유사사례 추출 결과_1.png" alt="유사사례 추출 결과 1" />
+                <img src="src/유사사례 추출 결과_2.png" alt="유사사례 추출 결과 2" />
+            </div>
+        </div>
+
+        <!-- 1. Top-K(유사사례) 추출 결과 + AI 추천 표 — 화면 꽉 차게 -->
+        <div class="slide slide-content slide-case slide-case-fill">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📊</span> 1. Top-K(유사사례) 추출 결과
+            </h2>
+            <div class="case-fill-row">
+                <div class="case-fill-left">
+                    <p class="case-msg-box"><strong>핵심 메시지</strong>: "막연한 추측이 아닌, 실제 성공 데이터에 기반한 증거를 제시합니다."</p>
+                    <div class="case-image-wrap">
+                        <img src="src/유사사례 추출 결과_1.png" alt="Top-K 유사사례 추출 결과" />
+                    </div>
+                    <p class="case-msg-box"><strong>설명</strong>: 이 화면은 AI가 현재 내담자와 가장 유사한 특징을 가진 <strong>과거 취업 성공
+                            케이스</strong>를
+                        실시간으로 찾아낸 결과입니다.</p>
+                </div>
+                <div class="case-fill-right">
+                    <div class="data-extract-section data-extract-in-case">
+                        <p class="data-extract-caption">
+                            AI 추천
+                            <span class="caption-sub">취업한 케이스만 추출해서 내담자에게 유리한 상담 자료 제공</span>
+                        </p>
+                        <div class="excel-table-wrap">
+                            <table class="excel-table" role="grid">
+                                <thead>
+                                    <tr>
+                                        <th class="excel-col-row"></th>
+                                        <th>나이</th>
+                                        <th>성별</th>
+                                        <th>학력</th>
+                                        <th>직업 훈련</th>
+                                        <th>취업 정보</th>
+                                        <th>희망 직종</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="excel-col-row">1</td>
+                                        <td>28</td>
+                                        <td>남</td>
+                                        <td>대졸</td>
+                                        <td>웹개발</td>
+                                        <td>정규직 취업</td>
+                                        <td>소프트웨어</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="excel-col-row">2</td>
+                                        <td>35</td>
+                                        <td>여</td>
+                                        <td>고졸</td>
+                                        <td>디자인</td>
+                                        <td>계약직</td>
+                                        <td>UI/UX</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="excel-col-row">3</td>
+                                        <td>42</td>
+                                        <td>남</td>
+                                        <td>대졸</td>
+                                        <td>데이터분석</td>
+                                        <td>재취업</td>
+                                        <td>데이터엔지니어</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="data-extract-lead">이러한 데이터를 추출했습니다.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="case-msg-box"><strong>세일즈 포인트</strong>: 상담사는 이 데이터를 통해 내담자에게 '당신과 비슷한 역량을 가진 분들이 실제로 이러한 경로로 취업에
+                성공했습니다'라는 <strong>강력한 확신</strong>을 줄 수 있습니다.</p>
+        </div>
+
+        <!-- 2. 프롬프트(AI_프롬프트) — 코드 블록으로 표시 -->
+        <div class="slide slide-content slide-case">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📝</span> 2. 프롬프트 (AI_프롬프트)
+            </h2>
+            <p class="case-msg-box"><strong>핵심 메시지</strong>: "상담사의 전문성을 AI의 논리적인 가이드로 변환합니다."</p>
+            <div class="case-prompt-code">
+                <pre><code><span class="code-name">system_prompt</span> <span class="code-pun">=</span> (
+    <span class="code-str">"너는 고용 상담 AI다. 반드시 JSON만 반환한다. "</span>
+    <span class="code-str">"PII(이름/주민번호)는 절대 생성하거나 복원하지 않는다. "</span>
+    <span class="code-str">"추천 직무는 반드시 두 종류를 모두 채운다: "</span>
+    <span class="code-str">"(1) recommendedJobsByProfile: 나이·성별·학력·역량·전공만 보고(희망직종은 보지 않음) 적합한 직무 3개, 1위~3위. 꼭 3개. "</span>
+    <span class="code-str">"(2) recommendedJobsByDesiredJob: 내담자 희망직종을 반영한 직무 3개, 1위~3위. 꼭 3개. "</span>
+    <span class="code-str">"recommendedTrainings는 위 추천 직무와 연관된 과정명 3개. "</span>
+    <span class="code-str">"expectedSalaryRange, suggestedServices 3개, coreQuestions 3개, recommendedCompanies, reason 한 문장."</span>
+)
+<span class="code-name">user_prompt</span> <span class="code-pun">=</span> {
+    <span class="code-attr">"mode"</span>: <span class="code-name">mode</span>,
+    <span class="code-attr">"input"</span>: {
+        <span class="code-attr">"age"</span>: <span class="code-name">masked_input</span>.<span class="code-func">get</span>(<span class="code-str">"age"</span>),
+        <span class="code-attr">"gender"</span>: <span class="code-name">masked_input</span>.<span class="code-func">get</span>(<span class="code-str">"gender"</span>),
+        <span class="code-attr">"education"</span>: <span class="code-name">masked_input</span>.<span class="code-func">get</span>(<span class="code-str">"education"</span>),
+        <span class="code-attr">"desiredJobs"</span>: <span class="code-name">desired_jobs_list</span>,
+        <span class="code-attr">"competency"</span>: <span class="code-name">masked_input</span>.<span class="code-func">get</span>(<span class="code-str">"competency"</span>),
+        <span class="code-attr">"major"</span>: <span class="code-name">masked_input</span>.<span class="code-func">get</span>(<span class="code-str">"major"</span>),
+    },
+    <span class="code-attr">"similarCases"</span>: <span class="code-name">compressed_cases</span>,
+    <span class="code-attr">"baseRecommendation"</span>: <span class="code-name">base</span>,
+    <span class="code-attr">"outputFormat"</span>: {
+        <span class="code-attr">"recommendedJobsByProfile"</span>: <span class="code-str">"배열 3개, 나이·성별·학력·역량·전공만 고려한 직무(희망직종 미반영)"</span>,
+        <span class="code-attr">"recommendedJobsByDesiredJob"</span>: <span class="code-str">"배열 3개, 희망직종 반영한 직무"</span>,
+        <span class="code-attr">"recommendedTrainings"</span>: <span class="code-str">"배열 3개, 추천 직무와 연관된 과정명"</span>,
+        <span class="code-attr">"recommendedCompanies"</span>: <span class="code-str">"배열"</span>,
+        <span class="code-attr">"expectedSalaryRange"</span>: <span class="code-str">"추천 직무 기준 연봉 범위 문자열"</span>,
+        <span class="code-attr">"suggestedServices"</span>: <span class="code-str">"배열 3개, 중요도순"</span>,
+        <span class="code-attr">"coreQuestions"</span>: <span class="code-str">"배열 3개, 중요도순"</span>,
+        <span class="code-attr">"reason"</span>: <span class="code-str">"GPT 판단 근거"</span>,
+    },
+}</code></pre>
+            </div>
+            <p class="case-msg-box"><strong>설명</strong>: AI가 상담 시나리오를 작성할 때 기준이 되는 '지시서'입니다. 내담자 정보는 clientId로 대체 전달하며,
+                유사 사례와 희망 사항을 결합해 상담 스크립트를 생성합니다.</p>
+            <p class="case-msg-box"><strong>세일즈 포인트</strong>: 단순 질의응답을 넘어 <strong>상담 품질 표준화</strong>를 위한 최적화된 로직으로
+                설계되었습니다.</p>
+        </div>
+
+        <!-- 3. 추천 결과(직무/급여 제안) 이미지 -->
+        <div class="slide slide-content slide-case">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">🎯</span> 3. 추천 결과 (직무/급여 제안)
+            </h2>
+            <p class="case-msg-box"><strong>핵심 메시지</strong>: "정성적 판단을 넘어선 데이터 기반의 정량적 컨설팅."</p>
+            <div class="case-image-wrap">
+                <img src="src/추천 결과.png" alt="추천 결과 - 직무 or 급여수준 제안방식 고도화" />
+            </div>
+            <p class="case-msg-box"><strong>설명</strong>: AI가 분석한 최종 결과물입니다. 내담자의 학력, 역량, 나이 등을 종합하여 가장 취업 확률이 높은
+                <strong>맞춤형 직무와 예상 급여 수준</strong>을 제안합니다.
+            </p>
+            <p class="case-msg-box"><strong>세일즈 포인트</strong>: 희망 직종을 반영하면서도 현실적인 시장 데이터를 매칭함으로써, 내담자의 눈높이를 조절하고
+                <strong>취업 성공률을 비약적으로 높이는 고도화된 컨설팅</strong>이 가능해집니다.
+            </p>
+        </div>
+
+        <!-- 슬라이드 15: AI 추천 결과 (AI 상담 시나리오 대시보드) — 화면 꽉 차게 -->
+        <div class="slide slide-content slide-ai-recommend">
+            <div class="ai-recommend-inner">
+                <header class="ai-recommend-header">
+                    <h2 class="ai-recommend-title">AI 추천</h2>
+                    <button type="button" class="ai-recommend-export">상담 시나리오 내보내기</button>
+                </header>
+                <div class="ai-recommend-body">
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">직무 추천</h3>
+                        <p class="ai-recommend-sub">프로필 기반</p>
+                        <div class="ai-recommend-tags">
+                            <span>자재관리사무원</span>
+                            <span>물류관리사무원</span>
+                            <span>생산관리사무원</span>
+                        </div>
+                        <p class="ai-recommend-sub">희망 직종 기반</p>
+                        <div class="ai-recommend-tags">
+                            <span>자재관리사무원</span>
+                            <span>물류관리사무원</span>
+                            <span>생산관리사무원</span>
+                        </div>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">추천 훈련</h3>
+                        <ul>
+                            <li>물류관리사무원 양성과정</li>
+                            <li>자재관리 및 재고관리 교육</li>
+                            <li>생산관리 실무 교육</li>
+                        </ul>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">추천 기업</h3>
+                        <ul>
+                            <li>(주)오뚜기</li>
+                            <li>주식회사삼오이엔지</li>
+                            <li>에이치디현대중공업주식회사</li>
+                        </ul>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">예상 급여 범위</h3>
+                        <p class="ai-recommend-salary">2,607,740원 ~ 3,466,358원</p>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">제안 서비스</h3>
+                        <ul>
+                            <li>직업심리검사</li>
+                            <li>일경험 프로그램</li>
+                            <li>국민취업지원제도 연계 상담</li>
+                        </ul>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">핵심 질문</h3>
+                        <ol class="ai-recommend-questions">
+                            <li>희망 직종으로 취업하기 위해 가장 먼저 해결해야 할 장애물은 무엇인가요?</li>
+                            <li>최근 3개월 내 바로 실행 가능한 행동 1가지는 무엇인가요?</li>
+                            <li>훈련과정 수강 후 취업까지의 목표 시점을 어떻게 설정하시겠어요?</li>
+                        </ol>
+                    </section>
+                    <section class="ai-recommend-card">
+                        <h3 class="ai-recommend-card-title">추천 사유</h3>
+                        <p>유사 사례의 취업직종/훈련이력/급여 정보를 기반으로 우선순위 추천을 구성했습니다.</p>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드: 직접 시연 (9페이지 뒤) — 맥 동영상 창 스타일 -->
+        <div class="slide slide-content title-slide slide-demo">
+            <div class="title-slide-inner">
+                <div class="mac-window" role="img" aria-label="데모 동영상 창">
+                    <div class="mac-title-bar">
+                        <div class="mac-traffic">
+                            <span class="red"></span>
+                            <span class="yellow"></span>
+                            <span class="green"></span>
+                        </div>
+                        <span class="mac-window-title">데모 시연</span>
+                    </div>
+                    <div class="mac-video-area">
+                        <div class="play-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드: 기대 효과 — 안심 -->
+        <div class="slide slide-content">
+            <h2 class="slide-title-with-icon"><span class="title-icon" aria-hidden="true">📈</span> 도입하면 어떤 효과가 있나요?
+            </h2>
+            <p class="lead-question">상담 품질과 업무 효율을 동시에 높이는 ROI — 도입 시 예상 효과로 불안을 줄이고 안심을 드립니다.</p>
+            <div class="impact-grid">
+                <div class="impact-card card-blur">
+                    <h3><span class="list-icon">⏱</span> 상담 준비 시간 60% 이상 절감</h3>
+                    <p>반복 서류·데이터 조회를 AI가 대신해, 상담 본업에 쓸 수 있는 시간이 늘어납니다.</p>
+                </div>
+                <div class="impact-card card-blur">
+                    <h3><span class="list-icon">⚖</span> 상담 품질의 상향 평준화</h3>
+                    <p>유사 사례 기반 데이터 상담으로 전환해, 상담사 간 역량 편차를 줄입니다.</p>
+                </div>
+                <div class="impact-card card-blur">
+                    <h3><span class="list-icon">🎯</span> 상담 성공률 향상</h3>
+                    <p>내담자 맞춤 역량 진단과 직무 매칭으로 취업 성공률을 높일 수 있습니다.</p>
+                </div>
+                <div class="impact-card card-blur">
+                    <h3><span class="list-icon">📊</span> 기관 평가 신뢰도 확보</h3>
+                    <p>표준화된 데이터 축적으로 상담 품질 관리를 체계적으로 증빙할 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 12: Q&A -->
+        <div class="slide slide-content slide-qa">
+            <div class="qa-slide-inner">
+                <h1 class="qa-title">Q&A</h1>
+                <p class="qa-lead">궁금하신 점을 질문해 주세요</p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 13: 마지막 페이지 — 마무리 멘트 (초록 배경 + 로고만 이 페이지에) -->
+        <div class="slide slide-end slide-important" aria-label="마지막 슬라이드: 감사합니다">
+            <div class="slide-logo-header">
+                <img src="src/f_logo.png" alt="로고" />
+            </div>
+            <div class="title-slide-inner">
+                <h1>감사합니다</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)" aria-label="이전">◀</button>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)" aria-label="다음">▶</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentSlideSpan = document.getElementById('current-slide');
+        const totalSlidesSpan = document.getElementById('total-slides');
+
+        totalSlidesSpan.textContent = totalSlides;
+
+        let prevSlideIndex = 0;
+        function showSlide(n) {
+            let newIndex = n;
+            if (n >= totalSlides) newIndex = totalSlides - 1;
+            else if (n < 0) newIndex = 0;
+            const direction = newIndex > currentSlide ? 1 : (newIndex < currentSlide ? -1 : 0);
+            prevSlideIndex = currentSlide;
+            currentSlide = newIndex;
+
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'slide-from-prev', 'slide-from-next');
+            });
+            slides[currentSlide].classList.add('active');
+            if (direction === 1) slides[currentSlide].classList.add('slide-from-next');
+            else if (direction === -1) slides[currentSlide].classList.add('slide-from-prev');
+
+            currentSlideSpan.textContent = currentSlide + 1;
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // 키보드 네비게이션 (위/아래 화살표, 스페이스, Page Up/Down)
+        document.addEventListener('keydown', function (e) {
+            const key = e.key;
+            const isPrev = key === 'ArrowUp' || key === 'PageUp';
+            const isNext = key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown' || key === ' ';
+            if (isPrev || isNext) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isPrev) changeSlide(-1);
+                else if (isNext && currentSlide < totalSlides - 1) changeSlide(1);
+            }
+        }, true);
+
+        // 버튼 클릭 시 이벤트 전파 차단 (페이지 전환 시 QA/팝업 등 불필요 반응 방지)
+        prevBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); });
+        nextBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); });
+
+        // 슬라이드 전환 후 포커스를 body로 이동해 외부 팝업/QA 트리거 방지
+        const origShowSlide = showSlide;
+        showSlide = function (n) {
+            origShowSlide(n);
+            document.body.focus();
+        };
+
+        // 초기 상태 설정
+        showSlide(0);
+
+        // 반응형: 컨테이너 실제 크기를 CSS 변수로 전달해 폰트/이미지가 비율 유지하며 스케일
+        function updateContainerScale() {
+            const container = document.querySelector('.presentation-container');
+            if (!container) return;
+            const w = container.offsetWidth;
+            const h = container.offsetHeight;
+            container.style.setProperty('--container-width', w + 'px');
+            container.style.setProperty('--container-height', h + 'px');
+        }
+        updateContainerScale();
+        window.addEventListener('resize', updateContainerScale);
+    </script>
+</body>
+
+</html>
